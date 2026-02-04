@@ -43,6 +43,7 @@ backend/outputs/
 # OS
 .DS_Store
 Thumbs.db
+nul
 
 # Logs
 logs/

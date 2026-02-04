@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Fragen & Diskussionen
+    url: https://github.com/neurovexon/axon-community/discussions
+    about: Nutze Discussions für Fragen und allgemeine Diskussionen
+  - name: Dokumentation
+    url: https://github.com/neurovexon/axon-community/wiki
+    about: Schau in die Dokumentation für Hilfe

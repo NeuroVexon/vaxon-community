@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" rx="20" fill="#0a0a0a"/>
+  <g transform="translate(15, 20)">
+    <!-- Raven body -->
+    <path d="M35 55 Q10 50 5 35 Q8 25 20 20 L35 15 Q50 10 60 15 L65 25 Q68 35 65 45 L55 55 Q45 60 35 55Z"
+          fill="#2a2a2a" stroke="#3a3a3a" stroke-width="1"/>
+    <!-- Wing highlight -->
+    <path d="M20 35 L5 50 Q10 45 25 40Z" fill="#00d4ff" opacity="0.8"/>
+    <!-- Eye -->
+    <circle cx="55" cy="25" r="4" fill="#00d4ff"/>
+    <!-- Beak -->
+    <path d="M65 25 L75 22 L65 30Z" fill="#3a3a3a"/>
+  </g>
+</svg>

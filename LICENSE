@@ -1,0 +1,157 @@
+# Business Source License 1.1
+
+## Licensor
+
+NeuroVexon
+Contact: license@neurovexon.de
+Website: https://neurovexon.de
+
+## Licensed Work
+
+Axon by NeuroVexon - Community Edition
+Version: 1.0 and all subsequent versions
+
+The Licensed Work is provided under the terms of this Business Source License 1.1.
+
+---
+
+## Additional Use Grant
+
+### ALLOWED - without additional license:
+
+**1. Personal Use**
+- Individuals may use the Work for personal, non-commercial purposes
+- Learning, experimenting, hobby projects
+
+**2. Internal Business Use (Evaluation)**
+- Companies may test and evaluate the Work internally
+- Development and testing on local systems
+- Proof-of-concept and demos
+- Maximum duration: 90 days for evaluation
+
+**3. Education & Research**
+- Universities, schools, and research institutions
+- Students and educators
+- Academic research projects
+- Publication of research results (with attribution)
+
+**4. Non-Profit Organizations**
+- Charitable organizations
+- Use for non-profit purposes
+- Up to 5 concurrent users
+
+**5. Open Source Contributions**
+- Forking the repository
+- Submitting pull requests
+- Bug reports and feature requests
+
+---
+
+### NOT ALLOWED - without commercial license:
+
+**1. Software-as-a-Service (SaaS)**
+- Offering the Work as a hosted service
+- Embedding the Work in a cloud service
+- Providing third-party access to the Work over the internet
+
+**2. Commercial Resale**
+- Selling the Work or parts thereof
+- Embedding the Work in a commercial product
+- Sublicensing to third parties
+
+**3. White-Labeling**
+- Removing or hiding NeuroVexon branding
+- Renaming the Work for commercial purposes
+- Presenting as own product
+
+**4. Productive Business Use**
+- Use in regular business operations beyond evaluation
+- More than 5 users in an organization
+- Integration into business-critical processes
+
+**5. Managed Service**
+- Installing and operating the Work for third parties for payment
+- Hosting for customers
+- Support services without partner agreement
+
+---
+
+## Commercial Use
+
+For commercial use beyond the "Additional Use Grant", a separate commercial license is required:
+
+**Axon Pro** - For individuals and small teams
+**Axon Enterprise** - For companies and organizations
+
+Contact for license inquiries:
+- Email: license@neurovexon.de
+- Web: https://neurovexon.de/pricing
+
+---
+
+## Change Date
+
+**February 1, 2030**
+
+On or after the Change Date, you may use the Licensed Work under the terms of the Change License.
+
+---
+
+## Change License
+
+**Apache License, Version 2.0**
+
+From the Change Date, the Licensed Work will automatically become available under the Apache License 2.0.
+
+---
+
+## Standard Terms
+
+### Copyright Grant
+
+The Licensor hereby grants you the right to copy, modify, create derivative works, redistribute, and make non-production use of the Licensed Work, subject to the above restrictions.
+
+### Patent Grant
+
+The Licensor hereby grants you a license under any patent claims that the Licensor can license that are necessarily infringed by the use or sale of the Licensed Work.
+
+### No Warranty
+
+THE LICENSED WORK IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+
+### Limitation of Liability
+
+IN NO EVENT SHALL THE LICENSOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OF THIS SOFTWARE.
+
+---
+
+## Notices
+
+When distributing the Licensed Work, you must:
+
+1. Include a copy of this License
+2. Retain all existing copyright, patent, trademark, and attribution notices
+3. Clearly indicate if the Work has been modified
+4. Retain the following notice in all copies:
+
+```
+Axon by NeuroVexon - Community Edition
+Copyright (c) 2024-2026 NeuroVexon
+Licensed under the Business Source License 1.1
+https://neurovexon.de
+```
+
+---
+
+## Contact
+
+For questions about this License or commercial license inquiries:
+
+**NeuroVexon**
+Email: license@neurovexon.de
+Web: https://neurovexon.de/license
+GitHub: https://github.com/neurovexon/axon-community
+
+---
+
+*This license is based on the Business Source License 1.1, originally created by MariaDB Corporation.*

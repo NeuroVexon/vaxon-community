@@ -17,7 +17,7 @@ import logging
 
 from core.config import settings
 from db.database import init_db
-from api import chat, audit, settings as settings_api
+from api import chat, audit, settings as settings_api, tools
 
 # Logging setup
 logging.basicConfig(
@@ -62,6 +62,7 @@ app.add_middleware(
 
 # Routers
 app.include_router(chat.router, prefix="/api/v1")
+app.include_router(tools.router, prefix="/api/v1")
 app.include_router(audit.router, prefix="/api/v1")
 app.include_router(settings_api.router, prefix="/api/v1")
 

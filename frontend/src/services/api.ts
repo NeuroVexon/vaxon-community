@@ -39,6 +39,7 @@ interface Settings {
   app_version: string
   llm_provider: string
   theme: string
+  system_prompt?: string
   available_providers: string[]
 }
 

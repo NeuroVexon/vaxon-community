@@ -63,8 +63,8 @@ export const api = {
 
   async streamMessage(
     message: string,
-    sessionId?: string,
-    onChunk: (chunk: { type: string; content?: string }) => void
+    onChunk: (chunk: { type: string; content?: string }) => void,
+    sessionId?: string
   ): Promise<void> {
     const response = await fetch(`${API_BASE}/chat/stream`, {
       method: 'POST',

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import { useRef, useEffect } from 'react'
 import MessageList from './MessageList'
 import MessageInput from './MessageInput'
 import ToolApprovalModal from '../Tools/ToolApprovalModal'

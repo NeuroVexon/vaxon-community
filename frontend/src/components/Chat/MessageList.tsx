@@ -1,4 +1,3 @@
-import React from 'react'
 import { User, Bot, Terminal, AlertCircle, CheckCircle } from 'lucide-react'
 import clsx from 'clsx'
 

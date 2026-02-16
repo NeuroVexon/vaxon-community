@@ -159,30 +159,77 @@ async def handle_web_fetch(params: dict) -> str:
 
 
 async def handle_web_search(params: dict) -> list[dict]:
-    """Search the web using DuckDuckGo"""
+    """Search the web using DuckDuckGo (with lite fallback for rate limits)"""
+    import re as _re
+
     query = params.get("query")
     max_results = params.get("max_results", 5)
 
     if not query:
         raise ToolExecutionError("Missing 'query' parameter")
 
+    # Try DDGS library first
     try:
         from duckduckgo_search import DDGS
-
         with DDGS() as ddgs:
             results = list(ddgs.text(query, max_results=max_results))
-            return [
-                {
-                    "title": r.get("title", ""),
-                    "url": r.get("href", ""),
-                    "snippet": r.get("body", "")
-                }
-                for r in results
-            ]
-    except ImportError:
-        raise ToolExecutionError("duckduckgo-search package not installed")
+            if results:
+                return [
+                    {
+                        "title": r.get("title", ""),
+                        "url": r.get("href", ""),
+                        "snippet": r.get("body", "")
+                    }
+                    for r in results
+                ]
     except Exception as e:
-        raise ToolExecutionError(f"Error searching: {e}")
+        logger.warning(f"DDGS library failed: {e}, falling back to lite")
+
+    # Fallback: DuckDuckGo HTML lite endpoint (bypasses API rate limits)
+    try:
+        async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
+            resp = await client.get(
+                "https://lite.duckduckgo.com/lite/",
+                params={"q": query},
+                headers={"User-Agent": "Mozilla/5.0 (compatible; Axon/1.1)"}
+            )
+            resp.raise_for_status()
+
+            results = []
+            # Find all result links — href may appear before or after class
+            links = _re.findall(
+                r"""<a[^>]*href=["']([^"']+)["'][^>]*class=.result-link[^>]*>(.+?)</a>""",
+                resp.text, _re.DOTALL
+            )
+            if not links:
+                # Try reverse order (class before href)
+                links = _re.findall(
+                    r"""<a[^>]*class=.result-link[^>]*href=["']([^"']+)["'][^>]*>(.+?)</a>""",
+                    resp.text, _re.DOTALL
+                )
+            # Find all snippets
+            snippets = _re.findall(
+                r"""class=.result-snippet.[^>]*>(.+?)</td>""",
+                resp.text, _re.DOTALL
+            )
+
+            for i, (url, title) in enumerate(links[:max_results]):
+                title = _re.sub(r'<[^>]+>', '', title).strip()
+                title = title.replace('&quot;', '"').replace('&amp;', '&')
+                snippet = ""
+                if i < len(snippets):
+                    snippet = _re.sub(r'<[^>]+>', '', snippets[i]).strip()
+                if title:
+                    results.append({"title": title, "url": url, "snippet": snippet})
+
+            if results:
+                return results
+
+        raise ToolExecutionError("No search results found")
+    except ToolExecutionError:
+        raise
+    except Exception as e:
+        raise ToolExecutionError(f"Search failed: {e}")
 
 
 async def handle_shell_execute(params: dict) -> str:

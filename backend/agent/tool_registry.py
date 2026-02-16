@@ -90,7 +90,8 @@ class ToolRegistry:
                 "query": {"type": "string", "description": "Search query", "required": True},
                 "max_results": {"type": "integer", "description": "Maximum results", "default": 5}
             },
-            risk_level=RiskLevel.LOW
+            risk_level=RiskLevel.LOW,
+            requires_approval=False
         ))
 
         # Shell Tools (Restricted)

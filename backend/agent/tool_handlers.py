@@ -151,7 +151,7 @@ async def handle_web_fetch(params: dict) -> str:
         raise ToolExecutionError(f"Access denied: {url}")
 
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
             response = await client.request(method, url)
             return response.text[:10000]  # Truncate large responses
     except Exception as e:

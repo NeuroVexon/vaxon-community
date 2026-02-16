@@ -58,7 +58,15 @@ def _parse_tool_calls_from_text(text: str, available_tools: list[dict]) -> Optio
         except (json.JSONDecodeError, KeyError):
             pass
 
-    # Pattern 3: tool_name(key="value", ...) or tool_name({"key": "value"})
+    # Build lookup: tool_name -> first required parameter name
+    tool_first_param = {}
+    for t in available_tools:
+        fname = t["function"]["name"]
+        required = t["function"]["parameters"].get("required", [])
+        if required:
+            tool_first_param[fname] = required[0]
+
+    # Pattern 3: tool_name(key="value", ...) or tool_name({"key": "value"}) or tool_name("positional")
     for tool_name in tool_names:
         pattern = rf'{re.escape(tool_name)}\s*\((.+?)\)'
         match = re.search(pattern, text, re.DOTALL)
@@ -73,6 +81,14 @@ def _parse_tool_calls_from_text(text: str, available_tools: list[dict]) -> Optio
                     args = {}
                     for kv in re.finditer(r'(\w+)\s*=\s*["\']([^"\']*)["\']', args_str):
                         args[kv.group(1)] = kv.group(2)
+
+                    # Fallback: positional arg like tool("value")
+                    if not args:
+                        pos_match = re.match(r'^["\'](.+?)["\']$', args_str)
+                        if pos_match and tool_name in tool_first_param:
+                            param_name = tool_first_param[tool_name]
+                            args = {param_name: pos_match.group(1)}
+
                 if args:
                     logger.info(f"Parsed tool call from text: {tool_name}({args})")
                     return [ToolCall(id="fallback_0", name=tool_name, parameters=args)]

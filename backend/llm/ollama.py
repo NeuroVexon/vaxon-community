@@ -4,6 +4,7 @@ Axon by NeuroVexon - Ollama LLM Provider
 
 import httpx
 import json
+import re
 from typing import AsyncGenerator, Optional
 import logging
 
@@ -11,6 +12,74 @@ from .provider import BaseLLMProvider, ChatMessage, LLMResponse, ToolCall
 from core.config import settings
 
 logger = logging.getLogger(__name__)
+
+
+def _parse_tool_calls_from_text(text: str, available_tools: list[dict]) -> Optional[list[ToolCall]]:
+    """
+    Fallback parser: extract tool calls from text when the model outputs them
+    as text instead of structured tool_calls (common with mistral:7b-instruct).
+
+    Handles patterns like:
+    - [TOOL_CALLS] [{"name":"memory_save","arguments":{...}}]
+    - memory_save(key="...", content="...")
+    """
+    if not text or not available_tools:
+        return None
+
+    tool_names = {t["function"]["name"] for t in available_tools}
+
+    # Pattern 1: [TOOL_CALLS] [...json...]
+    match = re.search(r'\[TOOL_CALLS\]\s*(\[.*?\])', text, re.DOTALL)
+    if match:
+        try:
+            calls = json.loads(match.group(1))
+            result = []
+            for i, call in enumerate(calls):
+                name = call.get("name", "")
+                args = call.get("arguments", {})
+                if name in tool_names:
+                    result.append(ToolCall(id=f"fallback_{i}", name=name, parameters=args))
+            if result:
+                logger.info(f"Parsed {len(result)} tool call(s) from [TOOL_CALLS] text")
+                return result
+        except (json.JSONDecodeError, KeyError):
+            pass
+
+    # Pattern 2: JSON object in code fences: ```{"name":"tool","arguments":{...}}```
+    fence_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', text, re.DOTALL)
+    if fence_match:
+        try:
+            obj = json.loads(fence_match.group(1))
+            name = obj.get("name", "")
+            args = obj.get("arguments", {})
+            if name in tool_names and args:
+                logger.info(f"Parsed tool call from code fence: {name}({args})")
+                return [ToolCall(id="fallback_0", name=name, parameters=args)]
+        except (json.JSONDecodeError, KeyError):
+            pass
+
+    # Pattern 3: tool_name(key="value", ...) or tool_name({"key": "value"})
+    for tool_name in tool_names:
+        pattern = rf'{re.escape(tool_name)}\s*\((.+?)\)'
+        match = re.search(pattern, text, re.DOTALL)
+        if match:
+            args_str = match.group(1).strip()
+            try:
+                # Try JSON-style: {"key": "value"}
+                if args_str.startswith('{'):
+                    args = json.loads(args_str)
+                else:
+                    # Try kwargs-style: key="value", content="value"
+                    args = {}
+                    for kv in re.finditer(r'(\w+)\s*=\s*["\']([^"\']*)["\']', args_str):
+                        args[kv.group(1)] = kv.group(2)
+                if args:
+                    logger.info(f"Parsed tool call from text: {tool_name}({args})")
+                    return [ToolCall(id="fallback_0", name=tool_name, parameters=args)]
+            except (json.JSONDecodeError, KeyError):
+                pass
+
+    return None
 
 
 class OllamaProvider(BaseLLMProvider):
@@ -57,8 +126,17 @@ class OllamaProvider(BaseLLMProvider):
                     for i, tc in enumerate(data["message"]["tool_calls"])
                 ]
 
+            content = data.get("message", {}).get("content")
+
+            # Fallback: parse tool calls from text if model didn't use structured format
+            if not tool_calls and content and tools:
+                parsed = _parse_tool_calls_from_text(content, tools)
+                if parsed:
+                    tool_calls = parsed
+                    content = None  # Don't return the raw text as content
+
             return LLMResponse(
-                content=data.get("message", {}).get("content"),
+                content=content,
                 tool_calls=tool_calls,
                 finish_reason=data.get("done_reason", "stop")
             )

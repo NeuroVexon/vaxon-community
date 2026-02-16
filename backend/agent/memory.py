@@ -123,14 +123,24 @@ class MemoryManager:
         )
         return list(result.scalars().all())
 
-    async def build_memory_prompt(self) -> str:
+    async def build_memory_prompt(self, plain: bool = False) -> str:
         """
         Build a memory block for injection into the system prompt.
         Returns an empty string if no memories exist.
+
+        Args:
+            plain: If True, returns plain text without markdown (for tool-calling models).
         """
         memories = await self.list_all(limit=MAX_MEMORIES_IN_PROMPT)
         if not memories:
             return ""
+
+        if plain:
+            # Plain text format — preserves tool calling in smaller models
+            facts = []
+            for mem in memories:
+                facts.append(f"{mem.key}: {mem.content}")
+            return "Bekannte Fakten: " + ". ".join(facts) + "."
 
         lines = ["", "## Dein Gedächtnis (persistente Fakten)", ""]
         for mem in memories:

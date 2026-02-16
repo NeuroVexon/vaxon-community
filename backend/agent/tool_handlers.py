@@ -232,8 +232,11 @@ async def handle_memory_save(params: dict) -> str:
     category = params.get("category")
     db_session = params.pop("_db_session", None)
 
-    if not key or not content:
-        raise ToolExecutionError("Missing 'key' or 'content' parameter")
+    if not key:
+        raise ToolExecutionError("Missing 'key' parameter")
+    # Fallback: use key as content if model forgot to fill content
+    if not content:
+        content = key
 
     if not db_session:
         raise ToolExecutionError("Memory tools require a database session")

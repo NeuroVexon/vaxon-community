@@ -58,6 +58,7 @@ class AuditLogger:
 
         self.db.add(entry)
         await self.db.flush()
+        await self.db.commit()
 
         logger.info(
             f"Audit: {event_type.value} - {tool_name or 'N/A'} "

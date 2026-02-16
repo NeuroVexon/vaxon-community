@@ -260,16 +260,20 @@ async def agent_message(
     db.add(user_message)
     await db.commit()
 
-    # Build message history from DB — inject persistent memory into system prompt
+    # Build message history from DB
+    # NOTE: mistral:7b-instruct breaks tool calling when system/markdown prompt is present.
+    # Use plain text memory as initial assistant message to preserve tool calling.
     memory_manager = MemoryManager(db)
-    memory_block = await memory_manager.build_memory_prompt()
+    memory_block = await memory_manager.build_memory_prompt(plain=True)
 
     messages = []
-    system_content = conversation.system_prompt or ""
+
+    # Memory context as assistant self-introduction (preserves tool calling)
     if memory_block:
-        system_content = (system_content + "\n" + memory_block).strip()
-    if system_content:
-        messages.append(ChatMessage(role="system", content=system_content))
+        messages.append(ChatMessage(
+            role="assistant",
+            content=f"Ich bin Axon, dein KI-Assistent. {memory_block}"
+        ))
 
     history_result = await db.execute(
         select(Message)

@@ -27,13 +27,13 @@ MAX_MEMORY_CONTENT_LENGTH = 500
 
 def _serialize_embedding(embedding: list[float]) -> bytes:
     """Serialize embedding list to bytes (float32)"""
-    return struct.pack(f'{len(embedding)}f', *embedding)
+    return struct.pack(f"{len(embedding)}f", *embedding)
 
 
 def _deserialize_embedding(data: bytes) -> list[float]:
     """Deserialize bytes back to embedding list"""
     count = len(data) // 4  # float32 = 4 bytes
-    return list(struct.unpack(f'{count}f', data))
+    return list(struct.unpack(f"{count}f", data))
 
 
 class MemoryManager:
@@ -47,7 +47,7 @@ class MemoryManager:
         key: str,
         content: str,
         source: str = "user",
-        category: Optional[str] = None
+        category: Optional[str] = None,
     ) -> Memory:
         """Add or update a memory entry (upsert by key)"""
         key = key.strip()[:255]
@@ -59,9 +59,7 @@ class MemoryManager:
         embedding_bytes = _serialize_embedding(embedding) if embedding else None
 
         # Check if key already exists — update if so
-        result = await self.db.execute(
-            select(Memory).where(Memory.key == key)
-        )
+        result = await self.db.execute(select(Memory).where(Memory.key == key))
         existing = result.scalar_one_or_none()
 
         if existing:
@@ -79,7 +77,7 @@ class MemoryManager:
             content=content,
             source=source,
             category=category,
-            embedding=embedding_bytes
+            embedding=embedding_bytes,
         )
         self.db.add(memory)
         await self.db.flush()
@@ -88,9 +86,7 @@ class MemoryManager:
 
     async def get(self, key: str) -> Optional[Memory]:
         """Get a single memory by key"""
-        result = await self.db.execute(
-            select(Memory).where(Memory.key == key)
-        )
+        result = await self.db.execute(select(Memory).where(Memory.key == key))
         return result.scalar_one_or_none()
 
     async def get_by_id(self, memory_id: str) -> Optional[Memory]:
@@ -98,9 +94,7 @@ class MemoryManager:
         return await self.db.get(Memory, memory_id)
 
     async def list_all(
-        self,
-        category: Optional[str] = None,
-        limit: int = 100
+        self, category: Optional[str] = None, limit: int = 100
     ) -> list[Memory]:
         """List all memories, optionally filtered by category"""
         query = select(Memory).order_by(Memory.updated_at.desc()).limit(limit)
@@ -121,9 +115,7 @@ class MemoryManager:
 
     async def remove_by_key(self, key: str) -> bool:
         """Delete a memory by key"""
-        result = await self.db.execute(
-            select(Memory).where(Memory.key == key)
-        )
+        result = await self.db.execute(select(Memory).where(Memory.key == key))
         memory = result.scalar_one_or_none()
         if not memory:
             return False
@@ -167,12 +159,16 @@ class MemoryManager:
                 results = [mem for score, mem in scored if score > 0.3][:limit]
 
                 if results:
-                    logger.info(f"Semantic search for '{query}': {len(results)} results (best score: {scored[0][0]:.3f})")
+                    logger.info(
+                        f"Semantic search for '{query}': {len(results)} results (best score: {scored[0][0]:.3f})"
+                    )
                     return results
 
             # If no scored results, try to embed unscored memories lazily
             if unscored:
-                logger.info(f"{len(unscored)} memories without embeddings — generating lazily")
+                logger.info(
+                    f"{len(unscored)} memories without embeddings — generating lazily"
+                )
                 for mem in unscored[:50]:  # Max 50 auf einmal
                     embed_text = f"{mem.key}: {mem.content}"
                     emb = await embedding_provider.embed(embed_text)
@@ -208,8 +204,7 @@ class MemoryManager:
         result = await self.db.execute(
             select(Memory)
             .where(
-                (Memory.key.ilike(search_term)) |
-                (Memory.content.ilike(search_term))
+                (Memory.key.ilike(search_term)) | (Memory.content.ilike(search_term))
             )
             .order_by(Memory.updated_at.desc())
             .limit(limit)

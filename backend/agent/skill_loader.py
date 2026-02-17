@@ -26,7 +26,9 @@ logger = logging.getLogger(__name__)
 
 # Erwartete Skill-Struktur
 REQUIRED_ATTRIBUTES = ["SKILL_NAME", "SKILL_DESCRIPTION", "SKILL_VERSION", "execute"]
-SKILLS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "skills")
+SKILLS_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "skills"
+)
 
 
 def compute_file_hash(file_path: str) -> str:
@@ -69,7 +71,9 @@ def validate_skill_module(file_path: str) -> tuple[bool, str, Optional[dict]]:
         "version": getattr(module, "SKILL_VERSION", "1.0.0"),
         "author": getattr(module, "SKILL_AUTHOR", None),
         "risk_level": getattr(module, "SKILL_RISK_LEVEL", "medium"),
-        "display_name": getattr(module, "SKILL_DISPLAY_NAME", getattr(module, "SKILL_NAME", "")),
+        "display_name": getattr(
+            module, "SKILL_DISPLAY_NAME", getattr(module, "SKILL_NAME", "")
+        ),
         "parameters": getattr(module, "SKILL_PARAMETERS", {}),
     }
 
@@ -122,17 +126,19 @@ class SkillLoader:
                     db_skill.enabled = False
                     await self.db.flush()
 
-                found_skills.append({
-                    "id": db_skill.id,
-                    "name": db_skill.name,
-                    "display_name": db_skill.display_name,
-                    "description": db_skill.description,
-                    "version": db_skill.version,
-                    "enabled": db_skill.enabled,
-                    "approved": db_skill.approved,
-                    "risk_level": db_skill.risk_level,
-                    "file_changed": db_skill.file_hash != file_hash,
-                })
+                found_skills.append(
+                    {
+                        "id": db_skill.id,
+                        "name": db_skill.name,
+                        "display_name": db_skill.display_name,
+                        "description": db_skill.description,
+                        "version": db_skill.version,
+                        "enabled": db_skill.enabled,
+                        "approved": db_skill.approved,
+                        "risk_level": db_skill.risk_level,
+                        "file_changed": db_skill.file_hash != file_hash,
+                    }
+                )
             else:
                 # Neuer Skill — in DB registrieren (nicht approved)
                 new_skill = Skill(
@@ -150,25 +156,25 @@ class SkillLoader:
                 self.db.add(new_skill)
                 await self.db.flush()
 
-                found_skills.append({
-                    "id": new_skill.id,
-                    "name": new_skill.name,
-                    "display_name": new_skill.display_name,
-                    "description": new_skill.description,
-                    "version": new_skill.version,
-                    "enabled": False,
-                    "approved": False,
-                    "risk_level": new_skill.risk_level,
-                    "file_changed": False,
-                })
+                found_skills.append(
+                    {
+                        "id": new_skill.id,
+                        "name": new_skill.name,
+                        "display_name": new_skill.display_name,
+                        "description": new_skill.description,
+                        "version": new_skill.version,
+                        "enabled": False,
+                        "approved": False,
+                        "risk_level": new_skill.risk_level,
+                        "file_changed": False,
+                    }
+                )
 
         return found_skills
 
     async def load_skill(self, skill_name: str) -> Optional[Any]:
         """Lädt ein approved Skill-Modul in den Speicher"""
-        result = await self.db.execute(
-            select(Skill).where(Skill.name == skill_name)
-        )
+        result = await self.db.execute(select(Skill).where(Skill.name == skill_name))
         db_skill = result.scalar_one_or_none()
 
         if not db_skill:
@@ -182,7 +188,9 @@ class SkillLoader:
         # Integritätsprüfung
         current_hash = compute_file_hash(db_skill.file_path)
         if current_hash != db_skill.file_hash:
-            logger.error(f"Skill '{skill_name}' — Datei-Hash stimmt nicht! Approval widerrufen.")
+            logger.error(
+                f"Skill '{skill_name}' — Datei-Hash stimmt nicht! Approval widerrufen."
+            )
             db_skill.approved = False
             db_skill.enabled = False
             await self.db.flush()
@@ -190,7 +198,9 @@ class SkillLoader:
 
         # Laden
         try:
-            spec = importlib.util.spec_from_file_location(f"skill_{skill_name}", db_skill.file_path)
+            spec = importlib.util.spec_from_file_location(
+                f"skill_{skill_name}", db_skill.file_path
+            )
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
             self._loaded_modules[skill_name] = module
@@ -214,6 +224,7 @@ class SkillLoader:
 
         # Async oder sync ausführen
         import asyncio
+
         if asyncio.iscoroutinefunction(execute_fn):
             return await execute_fn(params)
         return execute_fn(params)

@@ -35,6 +35,7 @@ try:
         ContextTypes,
         filters,
     )
+
     HAS_TELEGRAM = True
 except ImportError:
     HAS_TELEGRAM = False
@@ -77,6 +78,7 @@ def _is_allowed(user_id: int, allowed_users: set[int]) -> bool:
 
 # --- Bot Handlers ---
 
+
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handler fuer /start"""
     _, allowed_users = _get_config()
@@ -103,7 +105,12 @@ async def cmd_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     agent_id = _user_agents.get(user_id, "default")
     pending = len(_pending_approvals)
     await update.message.reply_text(
-        t("bot.status", session=session_display, agent=agent_id or "default", pending=str(pending))
+        t(
+            "bot.status",
+            session=session_display,
+            agent=agent_id or "default",
+            pending=str(pending),
+        )
     )
 
 
@@ -115,6 +122,7 @@ async def cmd_agents(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     try:
         import httpx
+
         async with httpx.AsyncClient(timeout=10.0) as client:
             resp = await client.get("http://localhost:8000/api/v1/agents")
             if resp.status_code == 200:
@@ -149,6 +157,7 @@ async def cmd_agent(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     try:
         import httpx
+
         async with httpx.AsyncClient(timeout=10.0) as client:
             resp = await client.get("http://localhost:8000/api/v1/agents")
             if resp.status_code == 200:
@@ -218,7 +227,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "POST",
                 "http://localhost:8000/api/v1/chat/agent",
                 json=request_body,
-                headers={"Content-Type": "application/json"}
+                headers={"Content-Type": "application/json"},
             ) as response:
                 full_text = ""
 
@@ -243,15 +252,31 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         approval_id = event.get("approval_id", "")
                         params = event.get("params", {})
 
-                        risk_emoji = {"low": "\U0001f7e2", "medium": "\U0001f7e1", "high": "\U0001f534", "critical": "\u26d4"}.get(risk_level, "\U0001f7e1")
+                        risk_emoji = {
+                            "low": "\U0001f7e2",
+                            "medium": "\U0001f7e1",
+                            "high": "\U0001f534",
+                            "critical": "\u26d4",
+                        }.get(risk_level, "\U0001f7e1")
 
-                        keyboard = InlineKeyboardMarkup([
+                        keyboard = InlineKeyboardMarkup(
                             [
-                                InlineKeyboardButton(t("bot.allow_once"), callback_data=f"approve:{approval_id}:once"),
-                                InlineKeyboardButton(t("bot.allow_session"), callback_data=f"approve:{approval_id}:session"),
-                                InlineKeyboardButton(t("bot.reject"), callback_data=f"approve:{approval_id}:never"),
+                                [
+                                    InlineKeyboardButton(
+                                        t("bot.allow_once"),
+                                        callback_data=f"approve:{approval_id}:once",
+                                    ),
+                                    InlineKeyboardButton(
+                                        t("bot.allow_session"),
+                                        callback_data=f"approve:{approval_id}:session",
+                                    ),
+                                    InlineKeyboardButton(
+                                        t("bot.reject"),
+                                        callback_data=f"approve:{approval_id}:never",
+                                    ),
+                                ]
                             ]
-                        ])
+                        )
 
                         params_str = "\n".join(f"  {k}: {v}" for k, v in params.items())
                         approval_msg = await update.message.reply_text(
@@ -259,7 +284,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             f"{_escape_md(description)}\n\n"
                             f"Parameter:\n```\n{params_str}\n```",
                             parse_mode="MarkdownV2",
-                            reply_markup=keyboard
+                            reply_markup=keyboard,
                         )
 
                         _pending_approvals[approval_id] = {
@@ -275,11 +300,15 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         try:
                             await update.message.reply_text(
                                 f"Tool `{_escape_md(tool_name)}` ausgefuehrt \\({exec_time}ms\\):\n```\n{_escape_md(result_text)}\n```",
-                                parse_mode="MarkdownV2"
+                                parse_mode="MarkdownV2",
                             )
                         except Exception:
                             await update.message.reply_text(
-                                t("bot.tool_executed", tool=tool_name, time=str(exec_time))
+                                t(
+                                    "bot.tool_executed",
+                                    tool=tool_name,
+                                    time=str(exec_time),
+                                )
                             )
 
                     elif event_type == "tool_rejected":
@@ -334,9 +363,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         }
         decision_text = decision_labels.get(decision, decision)
         await query.edit_message_reply_markup(reply_markup=None)
-        await query.message.reply_text(
-            t("bot.decision_label", decision=decision_text)
-        )
+        await query.message.reply_text(t("bot.decision_label", decision=decision_text))
 
         # Cleanup
         _pending_approvals.pop(approval_id, None)
@@ -348,11 +375,31 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # --- Utilities ---
 
+
 def _escape_md(text: str) -> str:
     """Escaped spezielle MarkdownV2 Zeichen"""
-    special = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
+    special = [
+        "_",
+        "*",
+        "[",
+        "]",
+        "(",
+        ")",
+        "~",
+        "`",
+        ">",
+        "#",
+        "+",
+        "-",
+        "=",
+        "|",
+        "{",
+        "}",
+        ".",
+        "!",
+    ]
     for char in special:
-        text = text.replace(char, f'\\{char}')
+        text = text.replace(char, f"\\{char}")
     return text
 
 
@@ -367,20 +414,23 @@ def _split_text(text: str, max_length: int = 4000) -> list[str]:
             chunks.append(text)
             break
         # Am naechsten Newline vor dem Limit splitten
-        split_pos = text.rfind('\n', 0, max_length)
+        split_pos = text.rfind("\n", 0, max_length)
         if split_pos == -1:
             split_pos = max_length
         chunks.append(text[:split_pos])
-        text = text[split_pos:].lstrip('\n')
+        text = text[split_pos:].lstrip("\n")
     return chunks
 
 
 # --- Main ---
 
+
 def run_bot():
     """Startet den Telegram Bot"""
     if not HAS_TELEGRAM:
-        logger.error("python-telegram-bot nicht installiert. pip install python-telegram-bot")
+        logger.error(
+            "python-telegram-bot nicht installiert. pip install python-telegram-bot"
+        )
         return
 
     token, _ = _get_config()

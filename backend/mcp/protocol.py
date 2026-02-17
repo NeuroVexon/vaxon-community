@@ -11,6 +11,7 @@ from pydantic import BaseModel
 
 class JsonRpcRequest(BaseModel):
     """JSON-RPC 2.0 Request"""
+
     jsonrpc: str = "2.0"
     id: Optional[int | str] = None
     method: str
@@ -19,6 +20,7 @@ class JsonRpcRequest(BaseModel):
 
 class JsonRpcResponse(BaseModel):
     """JSON-RPC 2.0 Response"""
+
     jsonrpc: str = "2.0"
     id: Optional[int | str] = None
     result: Optional[Any] = None
@@ -27,6 +29,7 @@ class JsonRpcResponse(BaseModel):
 
 class JsonRpcError:
     """Standard JSON-RPC error codes"""
+
     PARSE_ERROR = -32700
     INVALID_REQUEST = -32600
     METHOD_NOT_FOUND = -32601
@@ -58,21 +61,19 @@ def axon_tool_to_mcp(tool_def) -> dict:
             "type": "object",
             "properties": properties,
             "required": required,
-        }
+        },
     }
 
 
-def make_error_response(request_id: Optional[int | str], code: int, message: str) -> dict:
+def make_error_response(
+    request_id: Optional[int | str], code: int, message: str
+) -> dict:
     """Erstellt eine JSON-RPC Error-Response"""
     return JsonRpcResponse(
-        id=request_id,
-        error={"code": code, "message": message}
+        id=request_id, error={"code": code, "message": message}
     ).model_dump()
 
 
 def make_success_response(request_id: Optional[int | str], result: Any) -> dict:
     """Erstellt eine JSON-RPC Success-Response"""
-    return JsonRpcResponse(
-        id=request_id,
-        result=result
-    ).model_dump()
+    return JsonRpcResponse(id=request_id, result=result).model_dump()

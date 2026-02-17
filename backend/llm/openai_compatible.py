@@ -40,27 +40,27 @@ class OpenAICompatibleProvider(BaseLLMProvider):
         if self._client is None or self._current_key != self.api_key:
             try:
                 from openai import AsyncOpenAI
-                self._client = AsyncOpenAI(
-                    api_key=self.api_key,
-                    base_url=self.base_url
-                )
+
+                self._client = AsyncOpenAI(api_key=self.api_key, base_url=self.base_url)
                 self._current_key = self.api_key
             except ImportError:
-                raise ImportError("openai package not installed. Run: pip install openai")
+                raise ImportError(
+                    "openai package not installed. Run: pip install openai"
+                )
         return self._client
 
     async def chat(
         self,
         messages: list[ChatMessage],
         tools: Optional[list[dict]] = None,
-        stream: bool = False
+        stream: bool = False,
     ) -> LLMResponse:
         """Send chat message via OpenAI-compatible API"""
         client = self._get_client()
 
         kwargs = {
             "model": self.model,
-            "messages": [{"role": m.role, "content": m.content} for m in messages]
+            "messages": [{"role": m.role, "content": m.content} for m in messages],
         }
 
         if tools:
@@ -82,23 +82,21 @@ class OpenAICompatibleProvider(BaseLLMProvider):
                     params = json.loads(tc.function.arguments)
                 except (json.JSONDecodeError, TypeError):
                     params = {}
-                    logger.warning(f"Failed to parse tool arguments for {tc.function.name}")
-                tool_calls.append(ToolCall(
-                    id=tc.id,
-                    name=tc.function.name,
-                    parameters=params
-                ))
+                    logger.warning(
+                        f"Failed to parse tool arguments for {tc.function.name}"
+                    )
+                tool_calls.append(
+                    ToolCall(id=tc.id, name=tc.function.name, parameters=params)
+                )
 
         return LLMResponse(
             content=message.content,
             tool_calls=tool_calls,
-            finish_reason=response.choices[0].finish_reason or "stop"
+            finish_reason=response.choices[0].finish_reason or "stop",
         )
 
     async def chat_stream(
-        self,
-        messages: list[ChatMessage],
-        tools: Optional[list[dict]] = None
+        self, messages: list[ChatMessage], tools: Optional[list[dict]] = None
     ) -> AsyncGenerator[str, None]:
         """Stream chat response via OpenAI-compatible API"""
         client = self._get_client()
@@ -106,7 +104,7 @@ class OpenAICompatibleProvider(BaseLLMProvider):
         kwargs = {
             "model": self.model,
             "messages": [{"role": m.role, "content": m.content} for m in messages],
-            "stream": True
+            "stream": True,
         }
 
         if tools:

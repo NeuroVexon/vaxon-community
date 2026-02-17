@@ -33,6 +33,7 @@ _semaphore = asyncio.Semaphore(MAX_CONCURRENT)
 
 class SandboxResult:
     """Ergebnis einer Sandbox-Ausfuehrung"""
+
     def __init__(
         self,
         stdout: str,
@@ -69,7 +70,8 @@ async def _check_docker() -> bool:
     """Prueft ob Docker verfuegbar ist"""
     try:
         proc = await asyncio.create_subprocess_exec(
-            "docker", "info",
+            "docker",
+            "info",
             stdout=asyncio.subprocess.DEVNULL,
             stderr=asyncio.subprocess.DEVNULL,
         )
@@ -83,7 +85,10 @@ async def _check_image_exists() -> bool:
     """Prueft ob das Sandbox-Image existiert"""
     try:
         proc = await asyncio.create_subprocess_exec(
-            "docker", "image", "inspect", SANDBOX_IMAGE,
+            "docker",
+            "image",
+            "inspect",
+            SANDBOX_IMAGE,
             stdout=asyncio.subprocess.DEVNULL,
             stderr=asyncio.subprocess.DEVNULL,
         )
@@ -102,8 +107,12 @@ async def build_sandbox_image() -> bool:
 
     try:
         proc = await asyncio.create_subprocess_exec(
-            "docker", "build", "-t", SANDBOX_IMAGE,
-            "-f", dockerfile_path,
+            "docker",
+            "build",
+            "-t",
+            SANDBOX_IMAGE,
+            "-f",
+            dockerfile_path,
             os.path.dirname(dockerfile_path),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
@@ -134,29 +143,38 @@ async def execute_code(
     """
     if not await _check_docker():
         return SandboxResult(
-            stdout="", stderr="Docker ist nicht verfuegbar. Code-Sandbox deaktiviert.",
-            exit_code=1, execution_time_ms=0
+            stdout="",
+            stderr="Docker ist nicht verfuegbar. Code-Sandbox deaktiviert.",
+            exit_code=1,
+            execution_time_ms=0,
         )
 
     if not await _check_image_exists():
         return SandboxResult(
-            stdout="", stderr=f"Sandbox Image '{SANDBOX_IMAGE}' nicht gefunden. Bitte mit 'docker build' erstellen.",
-            exit_code=1, execution_time_ms=0
+            stdout="",
+            stderr=f"Sandbox Image '{SANDBOX_IMAGE}' nicht gefunden. Bitte mit 'docker build' erstellen.",
+            exit_code=1,
+            execution_time_ms=0,
         )
 
     timeout = min(timeout, MAX_TIMEOUT)
 
     # Fork-Bomb Detection
     dangerous_patterns = [
-        ":(){ :|:& };:", "fork()", "os.fork",
-        "while True: os.", "import subprocess; subprocess.Popen",
+        ":(){ :|:& };:",
+        "fork()",
+        "os.fork",
+        "while True: os.",
+        "import subprocess; subprocess.Popen",
     ]
     code_lower = code.lower()
     for pattern in dangerous_patterns:
         if pattern.lower() in code_lower:
             return SandboxResult(
-                stdout="", stderr=f"Sicherheitswarnung: Verdaechtiger Code erkannt ({pattern})",
-                exit_code=1, execution_time_ms=0
+                stdout="",
+                stderr=f"Sicherheitswarnung: Verdaechtiger Code erkannt ({pattern})",
+                exit_code=1,
+                execution_time_ms=0,
             )
 
     async with _semaphore:
@@ -171,17 +189,25 @@ async def execute_code(
             start_time = time.time()
 
             cmd = [
-                "docker", "run",
+                "docker",
+                "run",
                 "--rm",
-                "--network", "none",
-                "--memory", memory,
-                "--cpus", cpus,
+                "--network",
+                "none",
+                "--memory",
+                memory,
+                "--cpus",
+                cpus,
                 "--read-only",
-                "--tmpfs", "/tmp:rw,noexec,nosuid,size=64m",
-                "--pids-limit", "50",
-                "-v", f"{code_file}:/home/sandbox/code.py:ro",
+                "--tmpfs",
+                "/tmp:rw,noexec,nosuid,size=64m",
+                "--pids-limit",
+                "50",
+                "-v",
+                f"{code_file}:/home/sandbox/code.py:ro",
                 SANDBOX_IMAGE,
-                "python3", "/home/sandbox/code.py"
+                "python3",
+                "/home/sandbox/code.py",
             ]
 
             proc = await asyncio.create_subprocess_exec(
@@ -202,7 +228,9 @@ async def execute_code(
                 # Kill container
                 try:
                     await asyncio.create_subprocess_exec(
-                        "docker", "kill", f"axon-sandbox-{os.getpid()}",
+                        "docker",
+                        "kill",
+                        f"axon-sandbox-{os.getpid()}",
                         stdout=asyncio.subprocess.DEVNULL,
                         stderr=asyncio.subprocess.DEVNULL,
                     )

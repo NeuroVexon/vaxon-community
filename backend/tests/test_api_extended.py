@@ -16,11 +16,14 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 try:
     from main import app
     from fastapi.testclient import TestClient
+
     HAS_DEPS = True
 except ImportError:
     HAS_DEPS = False
 
-pytestmark = pytest.mark.skipif(not HAS_DEPS, reason="Server dependencies not installed")
+pytestmark = pytest.mark.skipif(
+    not HAS_DEPS, reason="Server dependencies not installed"
+)
 
 
 @pytest.fixture
@@ -62,12 +65,15 @@ class TestAgentEndpoints:
         assert response.status_code == 404
 
     def test_create_agent(self, client):
-        response = client.post("/api/v1/agents", json={
-            "name": "Test-Agent-API",
-            "description": "Erstellt via Test",
-            "risk_level_max": "low",
-            "allowed_tools": ["web_search"],
-        })
+        response = client.post(
+            "/api/v1/agents",
+            json={
+                "name": "Test-Agent-API",
+                "description": "Erstellt via Test",
+                "risk_level_max": "low",
+                "allowed_tools": ["web_search"],
+            },
+        )
         assert response.status_code == 200
         data = response.json()
         assert data["name"] == "Test-Agent-API"
@@ -75,22 +81,28 @@ class TestAgentEndpoints:
 
     def test_update_agent(self, client):
         # Create
-        created = client.post("/api/v1/agents", json={
-            "name": "Update-Test",
-        }).json()
+        created = client.post(
+            "/api/v1/agents",
+            json={
+                "name": "Update-Test",
+            },
+        ).json()
 
         # Update
-        response = client.put(f"/api/v1/agents/{created['id']}", json={
-            "description": "Aktualisiert"
-        })
+        response = client.put(
+            f"/api/v1/agents/{created['id']}", json={"description": "Aktualisiert"}
+        )
         assert response.status_code == 200
         assert response.json()["description"] == "Aktualisiert"
 
     def test_delete_agent(self, client):
         # Create non-default agent
-        created = client.post("/api/v1/agents", json={
-            "name": "Loeschbar-API",
-        }).json()
+        created = client.post(
+            "/api/v1/agents",
+            json={
+                "name": "Loeschbar-API",
+            },
+        ).json()
 
         # Delete
         response = client.delete(f"/api/v1/agents/{created['id']}")
@@ -124,11 +136,14 @@ class TestMemoryEndpoints:
         assert isinstance(response.json(), list)
 
     def test_create_memory(self, client):
-        response = client.post("/api/v1/memory", json={
-            "key": "API-Test",
-            "content": "Erstellt via API Test",
-            "category": "Test"
-        })
+        response = client.post(
+            "/api/v1/memory",
+            json={
+                "key": "API-Test",
+                "content": "Erstellt via API Test",
+                "category": "Test",
+            },
+        )
         assert response.status_code == 200
         data = response.json()
         assert data["key"] == "API-Test"
@@ -136,29 +151,26 @@ class TestMemoryEndpoints:
 
     def test_get_memory(self, client):
         # Create
-        created = client.post("/api/v1/memory", json={
-            "key": "Get-Test",
-            "content": "Abrufbar"
-        }).json()
+        created = client.post(
+            "/api/v1/memory", json={"key": "Get-Test", "content": "Abrufbar"}
+        ).json()
 
         response = client.get(f"/api/v1/memory/{created['id']}")
         assert response.status_code == 200
         assert response.json()["key"] == "Get-Test"
 
     def test_delete_memory(self, client):
-        created = client.post("/api/v1/memory", json={
-            "key": "Loesch-Test",
-            "content": "Wird geloescht"
-        }).json()
+        created = client.post(
+            "/api/v1/memory", json={"key": "Loesch-Test", "content": "Wird geloescht"}
+        ).json()
 
         response = client.delete(f"/api/v1/memory/{created['id']}")
         assert response.status_code == 200
 
     def test_search_memories(self, client):
-        client.post("/api/v1/memory", json={
-            "key": "Suchbar",
-            "content": "Python ist toll"
-        })
+        client.post(
+            "/api/v1/memory", json={"key": "Suchbar", "content": "Python ist toll"}
+        )
 
         response = client.get("/api/v1/memory?search=Python")
         assert response.status_code == 200
@@ -175,9 +187,7 @@ class TestConversationEndpoints:
         assert isinstance(response.json(), list)
 
     def test_send_message_creates_conversation(self, client):
-        response = client.post("/api/v1/chat/send", json={
-            "message": "Hallo Test"
-        })
+        response = client.post("/api/v1/chat/send", json={"message": "Hallo Test"})
         # May return 200 or 500 depending on LLM availability
         # We just verify the endpoint exists and accepts the request
         assert response.status_code in [200, 500, 503]
@@ -190,7 +200,11 @@ class TestAnalyticsEndpoints:
         response = client.get("/api/v1/analytics/overview")
         assert response.status_code == 200
         data = response.json()
-        assert "conversations" in data or "total_conversations" in data or isinstance(data, dict)
+        assert (
+            "conversations" in data
+            or "total_conversations" in data
+            or isinstance(data, dict)
+        )
 
 
 class TestSettingsHealth:
@@ -238,9 +252,12 @@ class TestRootEndpoints:
         assert data["status"] == "healthy"
 
     def test_cors_headers(self, client):
-        response = client.options("/", headers={
-            "Origin": "http://localhost:3000",
-            "Access-Control-Request-Method": "GET",
-        })
+        response = client.options(
+            "/",
+            headers={
+                "Origin": "http://localhost:3000",
+                "Access-Control-Request-Method": "GET",
+            },
+        )
         # CORS preflight should not return 405
         assert response.status_code in [200, 204, 400]

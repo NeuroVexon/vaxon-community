@@ -29,6 +29,7 @@ try:
     import discord
     from discord.ext import commands
     from discord import ui, app_commands  # noqa: F401
+
     HAS_DISCORD = True
 except ImportError:
     HAS_DISCORD = False
@@ -73,10 +74,7 @@ def _get_config():
 
 
 def _is_allowed(
-    user_id: int,
-    channel_id: int,
-    allowed_users: set[int],
-    allowed_channels: set[int]
+    user_id: int, channel_id: int, allowed_users: set[int], allowed_channels: set[int]
 ) -> bool:
     """Prueft ob User und Channel berechtigt sind"""
     if allowed_users and user_id not in allowed_users:
@@ -89,6 +87,7 @@ def _is_allowed(
 # --- Approval View (Discord Buttons) ---
 
 if HAS_DISCORD:
+
     class ApprovalView(ui.View):
         """Discord Button-View fuer Tool-Approvals"""
 
@@ -97,19 +96,37 @@ if HAS_DISCORD:
             self.approval_id = approval_id
             self.decision: Optional[str] = None
 
-        @ui.button(label="Allow", style=discord.ButtonStyle.green, custom_id="approve_once")
-        async def approve_once(self, interaction: discord.Interaction, button: ui.Button):
+        @ui.button(
+            label="Allow", style=discord.ButtonStyle.green, custom_id="approve_once"
+        )
+        async def approve_once(
+            self, interaction: discord.Interaction, button: ui.Button
+        ):
             await self._handle_decision(interaction, "once", t("bot.decision_once"))
 
-        @ui.button(label="Session", style=discord.ButtonStyle.blurple, custom_id="approve_session")
-        async def approve_session(self, interaction: discord.Interaction, button: ui.Button):
-            await self._handle_decision(interaction, "session", t("bot.decision_session"))
+        @ui.button(
+            label="Session",
+            style=discord.ButtonStyle.blurple,
+            custom_id="approve_session",
+        )
+        async def approve_session(
+            self, interaction: discord.Interaction, button: ui.Button
+        ):
+            await self._handle_decision(
+                interaction, "session", t("bot.decision_session")
+            )
 
-        @ui.button(label="Reject", style=discord.ButtonStyle.red, custom_id="approve_never")
-        async def approve_never(self, interaction: discord.Interaction, button: ui.Button):
+        @ui.button(
+            label="Reject", style=discord.ButtonStyle.red, custom_id="approve_never"
+        )
+        async def approve_never(
+            self, interaction: discord.Interaction, button: ui.Button
+        ):
             await self._handle_decision(interaction, "never", t("bot.decision_never"))
 
-        async def _handle_decision(self, interaction: discord.Interaction, decision: str, label: str):
+        async def _handle_decision(
+            self, interaction: discord.Interaction, decision: str, label: str
+        ):
             try:
                 import httpx
 
@@ -126,15 +143,13 @@ if HAS_DISCORD:
                     item.disabled = True
                 await interaction.response.edit_message(view=self)
                 await interaction.followup.send(
-                    t("bot.decision_label", decision=label),
-                    ephemeral=True
+                    t("bot.decision_label", decision=label), ephemeral=True
                 )
 
             except Exception as e:
                 logger.error(f"Discord approval error: {e}")
                 await interaction.response.send_message(
-                    t("bot.error", error=str(e)[:200]),
-                    ephemeral=True
+                    t("bot.error", error=str(e)[:200]), ephemeral=True
                 )
 
         async def on_timeout(self):
@@ -142,6 +157,7 @@ if HAS_DISCORD:
             if self.decision is None:
                 try:
                     import httpx
+
                     async with httpx.AsyncClient(timeout=10.0) as client:
                         await client.post(
                             f"http://localhost:8000/api/v1/chat/approve/{self.approval_id}?decision=never"
@@ -152,6 +168,7 @@ if HAS_DISCORD:
 
 
 # --- Bot Setup ---
+
 
 def run_bot():
     """Startet den Discord Bot"""
@@ -176,7 +193,9 @@ def run_bot():
     @bot.command(name="new")
     async def cmd_new(ctx: commands.Context):
         """Neuen Chat starten"""
-        if not _is_allowed(ctx.author.id, ctx.channel.id, allowed_users, allowed_channels):
+        if not _is_allowed(
+            ctx.author.id, ctx.channel.id, allowed_users, allowed_channels
+        ):
             return
         _user_sessions.pop(ctx.author.id, None)
         await ctx.send(t("bot.new_chat"))
@@ -184,23 +203,33 @@ def run_bot():
     @bot.command(name="status")
     async def cmd_status(ctx: commands.Context):
         """Status anzeigen"""
-        if not _is_allowed(ctx.author.id, ctx.channel.id, allowed_users, allowed_channels):
+        if not _is_allowed(
+            ctx.author.id, ctx.channel.id, allowed_users, allowed_channels
+        ):
             return
         session_id = _user_sessions.get(ctx.author.id, "-")
         sid_display = session_id[:8] + "..." if len(session_id) > 8 else session_id
         agent_id = _user_agents.get(ctx.author.id, "default")
         pending = len(_pending_approvals)
         await ctx.send(
-            t("bot.status", session=sid_display, agent=agent_id or "default", pending=str(pending))
+            t(
+                "bot.status",
+                session=sid_display,
+                agent=agent_id or "default",
+                pending=str(pending),
+            )
         )
 
     @bot.command(name="agents")
     async def cmd_agents(ctx: commands.Context):
         """Verfuegbare Agents auflisten"""
-        if not _is_allowed(ctx.author.id, ctx.channel.id, allowed_users, allowed_channels):
+        if not _is_allowed(
+            ctx.author.id, ctx.channel.id, allowed_users, allowed_channels
+        ):
             return
         try:
             import httpx
+
             async with httpx.AsyncClient(timeout=10.0) as client:
                 resp = await client.get("http://localhost:8000/api/v1/agents")
                 if resp.status_code == 200:
@@ -220,7 +249,9 @@ def run_bot():
     @bot.command(name="agent")
     async def cmd_agent(ctx: commands.Context, *, name: str = ""):
         """Agent wechseln"""
-        if not _is_allowed(ctx.author.id, ctx.channel.id, allowed_users, allowed_channels):
+        if not _is_allowed(
+            ctx.author.id, ctx.channel.id, allowed_users, allowed_channels
+        ):
             return
         if not name:
             await ctx.send(t("bot.commands"))
@@ -228,6 +259,7 @@ def run_bot():
 
         try:
             import httpx
+
             async with httpx.AsyncClient(timeout=10.0) as client:
                 resp = await client.get("http://localhost:8000/api/v1/agents")
                 if resp.status_code == 200:
@@ -260,7 +292,9 @@ def run_bot():
         if message.content.startswith("!"):
             return
 
-        if not _is_allowed(message.author.id, message.channel.id, allowed_users, allowed_channels):
+        if not _is_allowed(
+            message.author.id, message.channel.id, allowed_users, allowed_channels
+        ):
             return
 
         msg_text = message.content.strip()
@@ -288,7 +322,7 @@ def run_bot():
                         "POST",
                         "http://localhost:8000/api/v1/chat/agent",
                         json=request_body,
-                        headers={"Content-Type": "application/json"}
+                        headers={"Content-Type": "application/json"},
                     ) as response:
                         full_text = ""
 
@@ -313,20 +347,38 @@ def run_bot():
                                 approval_id = event.get("approval_id", "")
                                 params = event.get("params", {})
 
-                                risk_emoji = {"low": "\U0001f7e2", "medium": "\U0001f7e1", "high": "\U0001f534", "critical": "\u26d4"}.get(risk_level, "\U0001f7e1")
+                                risk_emoji = {
+                                    "low": "\U0001f7e2",
+                                    "medium": "\U0001f7e1",
+                                    "high": "\U0001f534",
+                                    "critical": "\u26d4",
+                                }.get(risk_level, "\U0001f7e1")
 
-                                params_str = "\n".join(f"  {k}: {v}" for k, v in params.items())
+                                params_str = "\n".join(
+                                    f"  {k}: {v}" for k, v in params.items()
+                                )
 
                                 embed = discord.Embed(
                                     title=f"{risk_emoji} {t('bot.tool_request', tool=tool_name)}",
                                     description=description,
-                                    color={"low": 0x00ff00, "medium": 0xffaa00, "high": 0xff0000, "critical": 0xff0000}.get(risk_level, 0xffaa00)
+                                    color={
+                                        "low": 0x00FF00,
+                                        "medium": 0xFFAA00,
+                                        "high": 0xFF0000,
+                                        "critical": 0xFF0000,
+                                    }.get(risk_level, 0xFFAA00),
                                 )
                                 if params_str:
-                                    embed.add_field(name="Parameter", value=f"```\n{params_str}\n```", inline=False)
+                                    embed.add_field(
+                                        name="Parameter",
+                                        value=f"```\n{params_str}\n```",
+                                        inline=False,
+                                    )
 
                                 view = ApprovalView(approval_id)
-                                approval_msg = await message.channel.send(embed=embed, view=view)
+                                approval_msg = await message.channel.send(
+                                    embed=embed, view=view
+                                )
 
                                 _pending_approvals[approval_id] = {
                                     "tool": tool_name,
@@ -340,9 +392,13 @@ def run_bot():
                                 exec_time = event.get("execution_time_ms", 0)
 
                                 embed = discord.Embed(
-                                    title=t("bot.tool_executed", tool=tool_name, time=str(exec_time)),
+                                    title=t(
+                                        "bot.tool_executed",
+                                        tool=tool_name,
+                                        time=str(exec_time),
+                                    ),
                                     description=f"```\n{result_text}\n```",
-                                    color=0x00d4ff
+                                    color=0x00D4FF,
                                 )
                                 await message.channel.send(embed=embed)
 
@@ -366,7 +422,6 @@ def run_bot():
                 logger.error(f"Discord message handler error: {e}")
                 await message.channel.send(t("bot.error", error=str(e)[:200]))
 
-
     logger.info(t("bot.started", channel="Discord"))
     bot.run(token)
 
@@ -381,11 +436,11 @@ def _split_text(text: str, max_length: int = 1900) -> list[str]:
         if len(text) <= max_length:
             chunks.append(text)
             break
-        split_pos = text.rfind('\n', 0, max_length)
+        split_pos = text.rfind("\n", 0, max_length)
         if split_pos == -1:
             split_pos = max_length
         chunks.append(text[:split_pos])
-        text = text[split_pos:].lstrip('\n')
+        text = text[split_pos:].lstrip("\n")
     return chunks
 
 

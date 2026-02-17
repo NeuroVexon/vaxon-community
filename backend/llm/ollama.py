@@ -16,7 +16,9 @@ from core.config import settings
 logger = logging.getLogger(__name__)
 
 
-def _parse_tool_calls_from_text(text: str, available_tools: list[dict]) -> Optional[list[ToolCall]]:
+def _parse_tool_calls_from_text(
+    text: str, available_tools: list[dict]
+) -> Optional[list[ToolCall]]:
     """
     Fallback parser: extract tool calls from text when the model outputs them
     as text instead of structured tool_calls (common with mistral:7b-instruct).
@@ -31,7 +33,7 @@ def _parse_tool_calls_from_text(text: str, available_tools: list[dict]) -> Optio
     tool_names = {t["function"]["name"] for t in available_tools}
 
     # Pattern 1: [TOOL_CALLS] [...json...]
-    match = re.search(r'\[TOOL_CALLS\]\s*(\[.*?\])', text, re.DOTALL)
+    match = re.search(r"\[TOOL_CALLS\]\s*(\[.*?\])", text, re.DOTALL)
     if match:
         try:
             calls = json.loads(match.group(1))
@@ -40,7 +42,9 @@ def _parse_tool_calls_from_text(text: str, available_tools: list[dict]) -> Optio
                 name = call.get("name", "")
                 args = call.get("arguments", {})
                 if name in tool_names:
-                    result.append(ToolCall(id=f"fallback_{i}", name=name, parameters=args))
+                    result.append(
+                        ToolCall(id=f"fallback_{i}", name=name, parameters=args)
+                    )
             if result:
                 logger.info(f"Parsed {len(result)} tool call(s) from [TOOL_CALLS] text")
                 return result
@@ -48,7 +52,7 @@ def _parse_tool_calls_from_text(text: str, available_tools: list[dict]) -> Optio
             pass
 
     # Pattern 2: JSON object in code fences: ```{"name":"tool","arguments":{...}}```
-    fence_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', text, re.DOTALL)
+    fence_match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
     if fence_match:
         try:
             obj = json.loads(fence_match.group(1))
@@ -70,13 +74,13 @@ def _parse_tool_calls_from_text(text: str, available_tools: list[dict]) -> Optio
 
     # Pattern 3: tool_name(key="value", ...) or tool_name({"key": "value"}) or tool_name("positional")
     for tool_name in tool_names:
-        pattern = rf'{re.escape(tool_name)}\s*\((.+?)\)'
+        pattern = rf"{re.escape(tool_name)}\s*\((.+?)\)"
         match = re.search(pattern, text, re.DOTALL)
         if match:
             args_str = match.group(1).strip()
             try:
                 # Try JSON-style: {"key": "value"}
-                if args_str.startswith('{'):
+                if args_str.startswith("{"):
                     args = json.loads(args_str)
                 else:
                     # Try kwargs-style: key="value", content="value"
@@ -116,24 +120,21 @@ class OllamaProvider(BaseLLMProvider):
         self,
         messages: list[ChatMessage],
         tools: Optional[list[dict]] = None,
-        stream: bool = False
+        stream: bool = False,
     ) -> LLMResponse:
         """Send chat message to Ollama"""
         async with httpx.AsyncClient(timeout=120.0) as client:
             payload = {
                 "model": self.model,
                 "messages": [{"role": m.role, "content": m.content} for m in messages],
-                "stream": False
+                "stream": False,
             }
 
             # Ollama supports tools in newer versions
             if tools:
                 payload["tools"] = tools
 
-            response = await client.post(
-                f"{self.base_url}/api/chat",
-                json=payload
-            )
+            response = await client.post(f"{self.base_url}/api/chat", json=payload)
             response.raise_for_status()
             data = response.json()
 
@@ -144,7 +145,7 @@ class OllamaProvider(BaseLLMProvider):
                     ToolCall(
                         id=tc.get("id", f"call_{i}"),
                         name=tc["function"]["name"],
-                        parameters=tc["function"]["arguments"]
+                        parameters=tc["function"]["arguments"],
                     )
                     for i, tc in enumerate(data["message"]["tool_calls"])
                 ]
@@ -161,29 +162,25 @@ class OllamaProvider(BaseLLMProvider):
             return LLMResponse(
                 content=content,
                 tool_calls=tool_calls,
-                finish_reason=data.get("done_reason", "stop")
+                finish_reason=data.get("done_reason", "stop"),
             )
 
     async def chat_stream(
-        self,
-        messages: list[ChatMessage],
-        tools: Optional[list[dict]] = None
+        self, messages: list[ChatMessage], tools: Optional[list[dict]] = None
     ) -> AsyncGenerator[str, None]:
         """Stream chat response from Ollama"""
         async with httpx.AsyncClient(timeout=120.0) as client:
             payload = {
                 "model": self.model,
                 "messages": [{"role": m.role, "content": m.content} for m in messages],
-                "stream": True
+                "stream": True,
             }
 
             if tools:
                 payload["tools"] = tools
 
             async with client.stream(
-                "POST",
-                f"{self.base_url}/api/chat",
-                json=payload
+                "POST", f"{self.base_url}/api/chat", json=payload
             ) as response:
                 response.raise_for_status()
                 async for line in response.aiter_lines():

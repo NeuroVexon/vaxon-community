@@ -13,9 +13,17 @@ SKILL_AUTHOR = "NeuroVexon"
 SKILL_RISK_LEVEL = "low"
 
 SKILL_PARAMETERS = {
-    "json_string": {"type": "string", "description": "JSON-String zum Formatieren", "required": True},
+    "json_string": {
+        "type": "string",
+        "description": "JSON-String zum Formatieren",
+        "required": True,
+    },
     "indent": {"type": "integer", "description": "Einrückung (Spaces)", "default": 2},
-    "sort_keys": {"type": "boolean", "description": "Keys alphabetisch sortieren", "default": False}
+    "sort_keys": {
+        "type": "boolean",
+        "description": "Keys alphabetisch sortieren",
+        "default": False,
+    },
 }
 
 
@@ -39,7 +47,9 @@ def execute(params: dict) -> dict:
             "position": e.pos,
         }
 
-    formatted = json.dumps(parsed, indent=indent, sort_keys=sort_keys, ensure_ascii=False)
+    formatted = json.dumps(
+        parsed, indent=indent, sort_keys=sort_keys, ensure_ascii=False
+    )
 
     # Analyse
     def count_elements(obj, depth=0):

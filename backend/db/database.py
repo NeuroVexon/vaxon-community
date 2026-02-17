@@ -11,7 +11,7 @@ engine = create_async_engine(
     settings.database_url,
     echo=settings.debug,
     future=True,
-    connect_args={"timeout": 30}  # Wait up to 30s for locks
+    connect_args={"timeout": 30},  # Wait up to 30s for locks
 )
 
 
@@ -23,11 +23,8 @@ def _set_sqlite_pragma(dbapi_connection, connection_record):
     cursor.execute("PRAGMA busy_timeout=30000")
     cursor.close()
 
-async_session = async_sessionmaker(
-    engine,
-    class_=AsyncSession,
-    expire_on_commit=False
-)
+
+async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 Base = declarative_base()
 

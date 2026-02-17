@@ -36,8 +36,7 @@ class WorkflowEngine:
         """Pruefen ob eine Nachricht einen Workflow-Trigger enthaelt"""
         result = await self.db.execute(
             select(Workflow).where(
-                Workflow.enabled,
-                Workflow.trigger_phrase.isnot(None)
+                Workflow.enabled, Workflow.trigger_phrase.isnot(None)
             )
         )
         workflows = result.scalars().all()
@@ -106,19 +105,28 @@ class WorkflowEngine:
 
             if on_step_start:
                 try:
-                    await on_step_start(i + 1, len(sorted_steps), resolved_prompt, store_as)
+                    await on_step_start(
+                        i + 1, len(sorted_steps), resolved_prompt, store_as
+                    )
                 except Exception:
                     pass
 
-            logger.info(f"Workflow '{workflow.name}' Step {i+1}/{len(sorted_steps)}: {store_as}")
+            logger.info(
+                f"Workflow '{workflow.name}' Step {i+1}/{len(sorted_steps)}: {store_as}"
+            )
 
             try:
                 messages = [
                     ChatMessage(
                         role="assistant",
-                        content=t("wf.step_intro", name=workflow.name, step=i+1, total=len(sorted_steps))
+                        content=t(
+                            "wf.step_intro",
+                            name=workflow.name,
+                            step=i + 1,
+                            total=len(sorted_steps),
+                        ),
                     ),
-                    ChatMessage(role="user", content=resolved_prompt)
+                    ChatMessage(role="user", content=resolved_prompt),
                 ]
                 response = await provider.chat(messages)
                 result_text = response.content or t("wf.no_response")
@@ -153,6 +161,7 @@ class WorkflowEngine:
 
     def _resolve_variables(self, template: str, context: dict) -> str:
         """Ersetzt {{variable}} mit Werten aus dem Kontext"""
+
         def replace(match):
             var_name = match.group(1).strip()
             return context.get(var_name, t("wf.var_missing", var=var_name))

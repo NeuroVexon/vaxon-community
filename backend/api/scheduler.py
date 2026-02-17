@@ -59,6 +59,7 @@ def _validate_cron(expression: str) -> bool:
     """Cron-Ausdruck validieren"""
     try:
         from apscheduler.triggers.cron import CronTrigger
+
         CronTrigger.from_crontab(expression)
         return True
     except Exception:
@@ -88,14 +89,12 @@ async def get_task(task_id: str, db: AsyncSession = Depends(get_db)):
 async def create_task(data: TaskCreate, db: AsyncSession = Depends(get_db)):
     """Neuen Task erstellen"""
     # Safety: Max Tasks
-    result = await db.execute(
-        select(ScheduledTask).where(ScheduledTask.enabled)
-    )
+    result = await db.execute(select(ScheduledTask).where(ScheduledTask.enabled))
     active_count = len(result.scalars().all())
     if active_count >= MAX_ACTIVE_TASKS:
         raise HTTPException(
             status_code=400,
-            detail=f"Maximale Anzahl aktiver Tasks erreicht ({MAX_ACTIVE_TASKS})"
+            detail=f"Maximale Anzahl aktiver Tasks erreicht ({MAX_ACTIVE_TASKS})",
         )
 
     # Validate cron
@@ -123,9 +122,7 @@ async def create_task(data: TaskCreate, db: AsyncSession = Depends(get_db)):
 
 @router.put("/{task_id}")
 async def update_task(
-    task_id: str,
-    data: TaskUpdate,
-    db: AsyncSession = Depends(get_db)
+    task_id: str, data: TaskUpdate, db: AsyncSession = Depends(get_db)
 ):
     """Task aktualisieren"""
     task = await db.get(ScheduledTask, task_id)
@@ -178,11 +175,7 @@ async def run_task(task_id: str, db: AsyncSession = Depends(get_db)):
     # Reload task to get updated last_run/last_result
     await db.refresh(task)
 
-    return {
-        "status": "executed",
-        "result": result,
-        "task": _task_to_dict(task)
-    }
+    return {"status": "executed", "result": result, "task": _task_to_dict(task)}
 
 
 @router.post("/{task_id}/toggle")

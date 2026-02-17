@@ -90,7 +90,9 @@ class TestAgentManagerCRUD:
         manager = AgentManager(db)
         agent = await manager.create_agent(name="Alt")
 
-        updated = await manager.update_agent(agent.id, name="Neu", description="Aktualisiert")
+        updated = await manager.update_agent(
+            agent.id, name="Neu", description="Aktualisiert"
+        )
         assert updated is not None
         assert updated.name == "Neu"
         assert updated.description == "Aktualisiert"

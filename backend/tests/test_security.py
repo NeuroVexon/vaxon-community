@@ -84,7 +84,9 @@ class TestValidateUrl:
         assert validate_url("http://172.17.0.1:5432") is False
 
     def test_link_local_blocked(self):
-        assert validate_url("http://169.254.169.254/latest/meta-data") is False  # AWS IMDS
+        assert (
+            validate_url("http://169.254.169.254/latest/meta-data") is False
+        )  # AWS IMDS
 
     def test_ipv6_localhost_blocked(self):
         assert validate_url("http://[::1]/api") is False

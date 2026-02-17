@@ -8,11 +8,14 @@ import pytest
 
 try:
     from agent.embeddings import cosine_similarity, EmbeddingProvider
+
     HAS_EMBEDDINGS = True
 except ImportError:
     HAS_EMBEDDINGS = False
 
-pytestmark = pytest.mark.skipif(not HAS_EMBEDDINGS, reason="agent.embeddings not available")
+pytestmark = pytest.mark.skipif(
+    not HAS_EMBEDDINGS, reason="agent.embeddings not available"
+)
 
 
 class TestCosineSimilarity:

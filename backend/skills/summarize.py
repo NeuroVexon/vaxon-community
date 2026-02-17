@@ -13,8 +13,16 @@ SKILL_AUTHOR = "NeuroVexon"
 SKILL_RISK_LEVEL = "low"
 
 SKILL_PARAMETERS = {
-    "text": {"type": "string", "description": "Der zu zusammenfassende Text", "required": True},
-    "max_sentences": {"type": "integer", "description": "Maximale Anzahl Sätze", "default": 3}
+    "text": {
+        "type": "string",
+        "description": "Der zu zusammenfassende Text",
+        "required": True,
+    },
+    "max_sentences": {
+        "type": "integer",
+        "description": "Maximale Anzahl Sätze",
+        "default": 3,
+    },
 }
 
 
@@ -28,7 +36,8 @@ def execute(params: dict) -> str:
 
     # Sätze extrahieren
     import re
-    sentences = re.split(r'(?<=[.!?])\s+', text.strip())
+
+    sentences = re.split(r"(?<=[.!?])\s+", text.strip())
 
     if len(sentences) <= max_sentences:
         return text.strip()

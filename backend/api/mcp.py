@@ -36,7 +36,11 @@ async def _get_mcp_settings(db: AsyncSession) -> dict:
     db_settings = {s.key: s.value for s in result.scalars().all()}
     return {
         "enabled": db_settings.get(MCP_ENABLED_KEY, "false") == "true",
-        "auth_token": decrypt_value(db_settings.get(MCP_AUTH_TOKEN_KEY, "")) if db_settings.get(MCP_AUTH_TOKEN_KEY) else "",
+        "auth_token": (
+            decrypt_value(db_settings.get(MCP_AUTH_TOKEN_KEY, ""))
+            if db_settings.get(MCP_AUTH_TOKEN_KEY)
+            else ""
+        ),
     }
 
 
@@ -85,6 +89,7 @@ async def mcp_sse_endpoint(request: Request, db: AsyncSession = Depends(get_db))
                     break
                 yield ": keepalive\n\n"
                 import asyncio
+
                 await asyncio.sleep(15)
         except Exception:
             pass
@@ -96,7 +101,7 @@ async def mcp_sse_endpoint(request: Request, db: AsyncSession = Depends(get_db))
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
             "X-Accel-Buffering": "no",
-        }
+        },
     )
 
 
@@ -104,7 +109,7 @@ async def mcp_sse_endpoint(request: Request, db: AsyncSession = Depends(get_db))
 async def mcp_messages_endpoint(
     request: Request,
     session_id: Optional[str] = None,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """
     MCP Messages Endpoint — empfaengt JSON-RPC Requests.

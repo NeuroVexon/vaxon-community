@@ -8,7 +8,14 @@ import pytest
 from datetime import datetime
 
 from db.models import (
-    Conversation, Message, AuditLog, Memory, Agent, ScheduledTask, Workflow, Settings,
+    Conversation,
+    Message,
+    AuditLog,
+    Memory,
+    Agent,
+    ScheduledTask,
+    Workflow,
+    Settings,
     generate_uuid,
 )
 
@@ -51,11 +58,7 @@ class TestConversationModel:
         db.add(conv)
         await db.flush()
 
-        msg = Message(
-            conversation_id=conv.id,
-            role="user",
-            content="Hallo Axon"
-        )
+        msg = Message(conversation_id=conv.id, role="user", content="Hallo Axon")
         db.add(msg)
         await db.flush()
 
@@ -82,9 +85,7 @@ class TestMessageModel:
         await db.flush()
 
         msg = Message(
-            conversation_id=conv.id,
-            role="assistant",
-            content="Ich bin Axon."
+            conversation_id=conv.id, role="assistant", content="Ich bin Axon."
         )
         db.add(msg)
         await db.flush()
@@ -106,7 +107,7 @@ class TestMessageModel:
             role="assistant",
             content="Suche...",
             tool_calls=[{"name": "web_search", "arguments": {"query": "test"}}],
-            tool_results=[{"result": "Ergebnis"}]
+            tool_results=[{"result": "Ergebnis"}],
         )
         db.add(msg)
         await db.flush()
@@ -130,7 +131,7 @@ class TestAuditLogModel:
             tool_name="web_search",
             tool_params={"query": "Python"},
             result="3 Ergebnisse",
-            execution_time_ms=150
+            execution_time_ms=150,
         )
         db.add(log)
         await db.flush()
@@ -147,10 +148,7 @@ class TestMemoryModel:
     @pytest.mark.asyncio
     async def test_create_memory(self, db):
         mem = Memory(
-            key="Lieblings-Sprache",
-            content="Python",
-            source="user",
-            category="Technik"
+            key="Lieblings-Sprache", content="Python", source="user", category="Technik"
         )
         db.add(mem)
         await db.flush()
@@ -182,7 +180,7 @@ class TestAgentModel:
             description="Ein Test-Agent",
             risk_level_max="medium",
             allowed_tools=["web_search", "file_read"],
-            auto_approve_tools=["web_search"]
+            auto_approve_tools=["web_search"],
         )
         db.add(agent)
         await db.flush()
@@ -215,7 +213,7 @@ class TestScheduledTaskModel:
             cron_expression="0 9 * * *",
             prompt="Zeige ungelesene E-Mails",
             approval_required=True,
-            notification_channel="telegram"
+            notification_channel="telegram",
         )
         db.add(task)
         await db.flush()
@@ -237,9 +235,13 @@ class TestWorkflowModel:
             trigger_phrase="Tagesstart",
             steps=[
                 {"order": 1, "prompt": "Zeige E-Mails", "store_as": "mails"},
-                {"order": 2, "prompt": "Fasse {{mails}} zusammen", "store_as": "summary"}
+                {
+                    "order": 2,
+                    "prompt": "Fasse {{mails}} zusammen",
+                    "store_as": "summary",
+                },
             ],
-            approval_mode="once_at_start"
+            approval_mode="once_at_start",
         )
         db.add(wf)
         await db.flush()

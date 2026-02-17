@@ -23,7 +23,7 @@ async def list_audit_logs(
     tool_name: Optional[str] = None,
     limit: int = 100,
     offset: int = 0,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """List audit logs with optional filters"""
     query = select(AuditLog).order_by(AuditLog.timestamp.desc())
@@ -50,7 +50,7 @@ async def list_audit_logs(
             "result": log.result[:200] if log.result else None,  # Truncate
             "error": log.error,
             "user_decision": log.user_decision,
-            "execution_time_ms": log.execution_time_ms
+            "execution_time_ms": log.execution_time_ms,
         }
         for log in logs
     ]
@@ -58,8 +58,7 @@ async def list_audit_logs(
 
 @router.get("/stats")
 async def get_audit_stats(
-    session_id: Optional[str] = None,
-    db: AsyncSession = Depends(get_db)
+    session_id: Optional[str] = None, db: AsyncSession = Depends(get_db)
 ):
     """Get audit statistics"""
     from sqlalchemy import func
@@ -76,8 +75,9 @@ async def get_audit_stats(
 
     # Count by event type
     type_result = await db.execute(
-        select(AuditLog.event_type, func.count(AuditLog.id))
-        .group_by(AuditLog.event_type)
+        select(AuditLog.event_type, func.count(AuditLog.id)).group_by(
+            AuditLog.event_type
+        )
     )
     by_type = {row[0]: row[1] for row in type_result}
 
@@ -91,8 +91,9 @@ async def get_audit_stats(
 
     # Average execution time
     time_result = await db.execute(
-        select(func.avg(AuditLog.execution_time_ms))
-        .where(AuditLog.execution_time_ms.isnot(None))
+        select(func.avg(AuditLog.execution_time_ms)).where(
+            AuditLog.execution_time_ms.isnot(None)
+        )
     )
     avg_time = time_result.scalar()
 
@@ -100,7 +101,7 @@ async def get_audit_stats(
         "total": total,
         "by_event_type": by_type,
         "by_tool": by_tool,
-        "avg_execution_time_ms": round(avg_time, 2) if avg_time else None
+        "avg_execution_time_ms": round(avg_time, 2) if avg_time else None,
     }
 
 
@@ -108,7 +109,7 @@ async def get_audit_stats(
 async def export_audit_logs(
     format: str = "csv",
     session_id: Optional[str] = None,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """Export audit logs as CSV or JSON"""
     query = select(AuditLog).order_by(AuditLog.timestamp.desc())
@@ -121,30 +122,41 @@ async def export_audit_logs(
     if format == "csv":
         output = io.StringIO()
         writer = csv.writer(output)
-        writer.writerow([
-            "id", "session_id", "timestamp", "event_type",
-            "tool_name", "tool_params", "result", "error",
-            "user_decision", "execution_time_ms"
-        ])
+        writer.writerow(
+            [
+                "id",
+                "session_id",
+                "timestamp",
+                "event_type",
+                "tool_name",
+                "tool_params",
+                "result",
+                "error",
+                "user_decision",
+                "execution_time_ms",
+            ]
+        )
         for log in logs:
-            writer.writerow([
-                log.id,
-                log.conversation_id,
-                log.timestamp.isoformat(),
-                log.event_type,
-                log.tool_name,
-                str(log.tool_params) if log.tool_params else "",
-                log.result[:500] if log.result else "",
-                log.error or "",
-                log.user_decision or "",
-                log.execution_time_ms or ""
-            ])
+            writer.writerow(
+                [
+                    log.id,
+                    log.conversation_id,
+                    log.timestamp.isoformat(),
+                    log.event_type,
+                    log.tool_name,
+                    str(log.tool_params) if log.tool_params else "",
+                    log.result[:500] if log.result else "",
+                    log.error or "",
+                    log.user_decision or "",
+                    log.execution_time_ms or "",
+                ]
+            )
 
         output.seek(0)
         return StreamingResponse(
             iter([output.getvalue()]),
             media_type="text/csv",
-            headers={"Content-Disposition": "attachment; filename=axon_audit_log.csv"}
+            headers={"Content-Disposition": "attachment; filename=axon_audit_log.csv"},
         )
     else:
         return [
@@ -158,7 +170,7 @@ async def export_audit_logs(
                 "result": log.result,
                 "error": log.error,
                 "user_decision": log.user_decision,
-                "execution_time_ms": log.execution_time_ms
+                "execution_time_ms": log.execution_time_ms,
             }
             for log in logs
         ]

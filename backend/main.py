@@ -18,12 +18,25 @@ import logging
 
 from core.config import settings
 from db.database import init_db
-from api import chat, audit, settings as settings_api, tools, memory, skills, agents, scheduler, workflows, mcp, analytics, upload
+from api import (
+    chat,
+    audit,
+    settings as settings_api,
+    tools,
+    memory,
+    skills,
+    agents,
+    scheduler,
+    workflows,
+    mcp,
+    analytics,
+    upload,
+)
 
 # Logging setup
 logging.basicConfig(
     level=logging.DEBUG if settings.debug else logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
 
@@ -39,12 +52,14 @@ async def lifespan(app: FastAPI):
     # Create default agents
     from db.database import async_session
     from agent.agent_manager import AgentManager
+
     async with async_session() as db:
         agent_mgr = AgentManager(db)
         await agent_mgr.ensure_defaults()
 
     # Start task scheduler
     from agent.scheduler import task_scheduler
+
     task_scheduler.start()
     await task_scheduler.sync_tasks()
     logger.info("TaskScheduler gestartet")
@@ -58,6 +73,7 @@ async def lifespan(app: FastAPI):
     if settings.telegram_enabled and settings.telegram_bot_token:
         try:
             from integrations.telegram import start_bot_async, get_running_app
+
             _telegram_task = asyncio.create_task(start_bot_async())
             _telegram_app = get_running_app
             logger.info("Telegram Bot gestartet")
@@ -67,7 +83,9 @@ async def lifespan(app: FastAPI):
     # Discord Bot runs as separate process (blocking event loop)
     # Start via: python -m integrations.discord
     if settings.discord_enabled and settings.discord_bot_token:
-        logger.info("Discord Bot ist aktiviert — starte separat mit: python -m integrations.discord")
+        logger.info(
+            "Discord Bot ist aktiviert — starte separat mit: python -m integrations.discord"
+        )
 
     yield
 
@@ -88,6 +106,7 @@ async def lifespan(app: FastAPI):
         _telegram_task.cancel()
 
     from agent.scheduler import task_scheduler as ts
+
     ts.stop()
     logger.info("Shutting down Axon")
 
@@ -96,7 +115,7 @@ app = FastAPI(
     title=settings.app_name,
     description="Agentic AI - ohne Kontrollverlust. Open Source KI-Assistent mit kontrollierten Agent-Fähigkeiten.",
     version=settings.app_version,
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # CORS
@@ -130,7 +149,7 @@ async def root():
         "name": settings.app_name,
         "version": settings.app_version,
         "tagline": "Agentic AI - ohne Kontrollverlust.",
-        "docs": "/docs"
+        "docs": "/docs",
     }
 
 
@@ -142,9 +161,7 @@ async def health():
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(
-        "main:app",
-        host=settings.host,
-        port=settings.port,
-        reload=settings.debug
+        "main:app", host=settings.host, port=settings.port, reload=settings.debug
     )

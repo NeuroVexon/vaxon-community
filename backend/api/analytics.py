@@ -9,8 +9,13 @@ from datetime import datetime, timedelta
 
 from db.database import get_db
 from db.models import (
-    Conversation, Message, AuditLog, Agent, ScheduledTask,
-    Workflow, Skill
+    Conversation,
+    Message,
+    AuditLog,
+    Agent,
+    ScheduledTask,
+    Workflow,
+    Skill,
 )
 
 router = APIRouter(prefix="/analytics", tags=["analytics"])
@@ -26,27 +31,19 @@ async def get_overview(db: AsyncSession = Depends(get_db)):
     msg_count = await db.scalar(select(func.count(Message.id)))
 
     # Agents
-    agent_count = await db.scalar(
-        select(func.count(Agent.id)).where(Agent.enabled)
-    )
+    agent_count = await db.scalar(select(func.count(Agent.id)).where(Agent.enabled))
 
     # Tool Calls (aus Audit)
     tool_calls = await db.scalar(
-        select(func.count(AuditLog.id)).where(
-            AuditLog.event_type == "tool_executed"
-        )
+        select(func.count(AuditLog.id)).where(AuditLog.event_type == "tool_executed")
     )
 
     # Approval Rate
     total_requests = await db.scalar(
-        select(func.count(AuditLog.id)).where(
-            AuditLog.event_type == "tool_requested"
-        )
+        select(func.count(AuditLog.id)).where(AuditLog.event_type == "tool_requested")
     )
     approved = await db.scalar(
-        select(func.count(AuditLog.id)).where(
-            AuditLog.event_type == "tool_approved"
-        )
+        select(func.count(AuditLog.id)).where(AuditLog.event_type == "tool_approved")
     )
     approval_rate = (approved / total_requests * 100) if total_requests > 0 else 0
 
@@ -87,10 +84,7 @@ async def get_tool_stats(db: AsyncSession = Depends(get_db)):
             func.count(AuditLog.id).label("count"),
             func.avg(AuditLog.execution_time_ms).label("avg_time"),
         )
-        .where(
-            AuditLog.event_type == "tool_executed",
-            AuditLog.tool_name.isnot(None)
-        )
+        .where(AuditLog.event_type == "tool_executed", AuditLog.tool_name.isnot(None))
         .group_by(AuditLog.tool_name)
         .order_by(func.count(AuditLog.id).desc())
         .limit(20)
@@ -110,10 +104,7 @@ async def get_tool_stats(db: AsyncSession = Depends(get_db)):
             AuditLog.tool_name,
             func.count(AuditLog.id).label("failures"),
         )
-        .where(
-            AuditLog.event_type == "tool_failed",
-            AuditLog.tool_name.isnot(None)
-        )
+        .where(AuditLog.event_type == "tool_failed", AuditLog.tool_name.isnot(None))
         .group_by(AuditLog.tool_name)
     )
     failures = {row.tool_name: row.failures for row in result}
@@ -122,7 +113,9 @@ async def get_tool_stats(db: AsyncSession = Depends(get_db)):
     for tool in tool_usage:
         tool["failures"] = failures.get(tool["tool"], 0)
         total = tool["count"] + tool["failures"]
-        tool["error_rate"] = round(tool["failures"] / total * 100, 1) if total > 0 else 0
+        tool["error_rate"] = (
+            round(tool["failures"] / total * 100, 1) if total > 0 else 0
+        )
 
     return {"tools": tool_usage}
 
@@ -150,10 +143,7 @@ async def get_timeline(days: int = 30, db: AsyncSession = Depends(get_db)):
             func.date(AuditLog.timestamp).label("day"),
             func.count(AuditLog.id).label("count"),
         )
-        .where(
-            AuditLog.timestamp >= cutoff,
-            AuditLog.event_type == "tool_executed"
-        )
+        .where(AuditLog.timestamp >= cutoff, AuditLog.event_type == "tool_executed")
         .group_by(func.date(AuditLog.timestamp))
         .order_by(func.date(AuditLog.timestamp))
     )
@@ -163,11 +153,13 @@ async def get_timeline(days: int = 30, db: AsyncSession = Depends(get_db)):
     timeline = []
     for i in range(days):
         day = (datetime.utcnow() - timedelta(days=days - 1 - i)).strftime("%Y-%m-%d")
-        timeline.append({
-            "date": day,
-            "conversations": conv_by_day.get(day, 0),
-            "tool_calls": tools_by_day.get(day, 0),
-        })
+        timeline.append(
+            {
+                "date": day,
+                "conversations": conv_by_day.get(day, 0),
+                "tool_calls": tools_by_day.get(day, 0),
+            }
+        )
 
     return {"timeline": timeline}
 
@@ -182,15 +174,21 @@ async def get_agent_stats(db: AsyncSession = Depends(get_db)):
 
     agent_stats = []
     for agent in agents:
-        agent_stats.append({
-            "id": agent.id,
-            "name": agent.name,
-            "description": agent.description,
-            "is_default": agent.is_default,
-            "tools_count": len(agent.allowed_tools) if agent.allowed_tools else "alle",
-            "auto_approve_count": len(agent.auto_approve_tools) if agent.auto_approve_tools else 0,
-            "risk_level_max": agent.risk_level_max,
-        })
+        agent_stats.append(
+            {
+                "id": agent.id,
+                "name": agent.name,
+                "description": agent.description,
+                "is_default": agent.is_default,
+                "tools_count": (
+                    len(agent.allowed_tools) if agent.allowed_tools else "alle"
+                ),
+                "auto_approve_count": (
+                    len(agent.auto_approve_tools) if agent.auto_approve_tools else 0
+                ),
+                "risk_level_max": agent.risk_level_max,
+            }
+        )
 
     return {"agents": agent_stats}
 
@@ -212,7 +210,10 @@ async def get_task_overview(db: AsyncSession = Depends(get_db)):
                 "enabled": t.enabled,
                 "last_run": t.last_run.isoformat() if t.last_run else None,
                 "last_result_status": (
-                    "success" if t.last_result and not t.last_result.startswith("Fehler") and not t.last_result.startswith("Timeout")
+                    "success"
+                    if t.last_result
+                    and not t.last_result.startswith("Fehler")
+                    and not t.last_result.startswith("Timeout")
                     else "error" if t.last_result else "pending"
                 ),
             }

@@ -34,24 +34,27 @@ class OpenAIProvider(BaseLLMProvider):
         if self._client is None or self._current_key != self.api_key:
             try:
                 from openai import AsyncOpenAI
+
                 self._client = AsyncOpenAI(api_key=self.api_key)
                 self._current_key = self.api_key
             except ImportError:
-                raise ImportError("openai package not installed. Run: pip install openai")
+                raise ImportError(
+                    "openai package not installed. Run: pip install openai"
+                )
         return self._client
 
     async def chat(
         self,
         messages: list[ChatMessage],
         tools: Optional[list[dict]] = None,
-        stream: bool = False
+        stream: bool = False,
     ) -> LLMResponse:
         """Send chat message to OpenAI"""
         client = self._get_client()
 
         kwargs = {
             "model": self.model,
-            "messages": [{"role": m.role, "content": m.content} for m in messages]
+            "messages": [{"role": m.role, "content": m.content} for m in messages],
         }
 
         if tools:
@@ -67,7 +70,7 @@ class OpenAIProvider(BaseLLMProvider):
                 ToolCall(
                     id=tc.id,
                     name=tc.function.name,
-                    parameters=json.loads(tc.function.arguments)
+                    parameters=json.loads(tc.function.arguments),
                 )
                 for tc in message.tool_calls
             ]
@@ -75,13 +78,11 @@ class OpenAIProvider(BaseLLMProvider):
         return LLMResponse(
             content=message.content,
             tool_calls=tool_calls,
-            finish_reason=response.choices[0].finish_reason or "stop"
+            finish_reason=response.choices[0].finish_reason or "stop",
         )
 
     async def chat_stream(
-        self,
-        messages: list[ChatMessage],
-        tools: Optional[list[dict]] = None
+        self, messages: list[ChatMessage], tools: Optional[list[dict]] = None
     ) -> AsyncGenerator[str, None]:
         """Stream chat response from OpenAI"""
         client = self._get_client()
@@ -89,7 +90,7 @@ class OpenAIProvider(BaseLLMProvider):
         kwargs = {
             "model": self.model,
             "messages": [{"role": m.role, "content": m.content} for m in messages],
-            "stream": True
+            "stream": True,
         }
 
         if tools:

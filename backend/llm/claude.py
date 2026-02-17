@@ -33,10 +33,13 @@ class ClaudeProvider(BaseLLMProvider):
         if self._client is None or self._current_key != self.api_key:
             try:
                 from anthropic import AsyncAnthropic
+
                 self._client = AsyncAnthropic(api_key=self.api_key)
                 self._current_key = self.api_key
             except ImportError:
-                raise ImportError("anthropic package not installed. Run: pip install anthropic")
+                raise ImportError(
+                    "anthropic package not installed. Run: pip install anthropic"
+                )
         return self._client
 
     def _convert_tools(self, tools: list[dict]) -> list[dict]:
@@ -45,18 +48,22 @@ class ClaudeProvider(BaseLLMProvider):
         for tool in tools:
             if tool.get("type") == "function":
                 func = tool["function"]
-                claude_tools.append({
-                    "name": func["name"],
-                    "description": func.get("description", ""),
-                    "input_schema": func.get("parameters", {"type": "object", "properties": {}})
-                })
+                claude_tools.append(
+                    {
+                        "name": func["name"],
+                        "description": func.get("description", ""),
+                        "input_schema": func.get(
+                            "parameters", {"type": "object", "properties": {}}
+                        ),
+                    }
+                )
         return claude_tools
 
     async def chat(
         self,
         messages: list[ChatMessage],
         tools: Optional[list[dict]] = None,
-        stream: bool = False
+        stream: bool = False,
     ) -> LLMResponse:
         """Send chat message to Claude"""
         client = self._get_client()
@@ -70,11 +77,7 @@ class ClaudeProvider(BaseLLMProvider):
             else:
                 chat_messages.append({"role": m.role, "content": m.content})
 
-        kwargs = {
-            "model": self.model,
-            "max_tokens": 4096,
-            "messages": chat_messages
-        }
+        kwargs = {"model": self.model, "max_tokens": 4096, "messages": chat_messages}
 
         if system_message:
             kwargs["system"] = system_message
@@ -94,22 +97,18 @@ class ClaudeProvider(BaseLLMProvider):
             elif block.type == "tool_use":
                 if tool_calls is None:
                     tool_calls = []
-                tool_calls.append(ToolCall(
-                    id=block.id,
-                    name=block.name,
-                    parameters=block.input
-                ))
+                tool_calls.append(
+                    ToolCall(id=block.id, name=block.name, parameters=block.input)
+                )
 
         return LLMResponse(
             content=content,
             tool_calls=tool_calls,
-            finish_reason=response.stop_reason or "stop"
+            finish_reason=response.stop_reason or "stop",
         )
 
     async def chat_stream(
-        self,
-        messages: list[ChatMessage],
-        tools: Optional[list[dict]] = None
+        self, messages: list[ChatMessage], tools: Optional[list[dict]] = None
     ) -> AsyncGenerator[str, None]:
         """Stream chat response from Claude"""
         client = self._get_client()
@@ -123,11 +122,7 @@ class ClaudeProvider(BaseLLMProvider):
             else:
                 chat_messages.append({"role": m.role, "content": m.content})
 
-        kwargs = {
-            "model": self.model,
-            "max_tokens": 4096,
-            "messages": chat_messages
-        }
+        kwargs = {"model": self.model, "max_tokens": 4096, "messages": chat_messages}
 
         if system_message:
             kwargs["system"] = system_message

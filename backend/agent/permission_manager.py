@@ -11,9 +11,9 @@ logger = logging.getLogger(__name__)
 
 
 class PermissionScope(str, Enum):
-    ONCE = "once"           # One-time permission
-    SESSION = "session"     # For this session
-    NEVER = "never"         # Block permanently
+    ONCE = "once"  # One-time permission
+    SESSION = "session"  # For this session
+    NEVER = "never"  # Block permanently
 
 
 class PermissionManager:
@@ -37,12 +37,7 @@ class PermissionManager:
         """Create a key for tool-level permission"""
         return hashlib.sha256(f"tool:{tool}".encode()).hexdigest()[:16]
 
-    def check_permission(
-        self,
-        session_id: str,
-        tool: str,
-        params: dict
-    ) -> bool:
+    def check_permission(self, session_id: str, tool: str, params: dict) -> bool:
         """Check if permission exists for this tool call"""
         # Check if blocked
         exact_key = self._create_permission_key(tool, params)
@@ -66,11 +61,7 @@ class PermissionManager:
         return False
 
     def grant_permission(
-        self,
-        session_id: str,
-        tool: str,
-        params: dict,
-        scope: PermissionScope
+        self, session_id: str, tool: str, params: dict, scope: PermissionScope
     ) -> None:
         """Grant permission for a tool call"""
         exact_key = self._create_permission_key(tool, params)
@@ -96,10 +87,7 @@ class PermissionManager:
             logger.info(f"Granted one-time permission for {tool}")
 
     def revoke_permission(
-        self,
-        session_id: str,
-        tool: str,
-        params: Optional[dict] = None
+        self, session_id: str, tool: str, params: Optional[dict] = None
     ) -> None:
         """Revoke a specific permission"""
         if params:
@@ -135,10 +123,11 @@ class PermissionManager:
         tool: str,
         params: dict,
         description: str,
-        risk_level: str
+        risk_level: str,
     ) -> str:
         """Create a pending approval request"""
         import uuid
+
         approval_id = str(uuid.uuid4())[:8]
 
         self._pending[approval_id] = {
@@ -147,7 +136,7 @@ class PermissionManager:
             "tool": tool,
             "params": params,
             "description": description,
-            "risk_level": risk_level
+            "risk_level": risk_level,
         }
 
         return approval_id

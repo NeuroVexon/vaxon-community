@@ -16,21 +16,15 @@ SKILL_PARAMETERS = {
     "action": {
         "type": "string",
         "description": "Aktion: 'unread' (ungelesene), 'search' (suchen), 'read' (eine lesen)",
-        "required": True
+        "required": True,
     },
-    "query": {
-        "type": "string",
-        "description": "Suchbegriff (fuer action=search)"
-    },
-    "uid": {
-        "type": "string",
-        "description": "E-Mail UID (fuer action=read)"
-    },
+    "query": {"type": "string", "description": "Suchbegriff (fuer action=search)"},
+    "uid": {"type": "string", "description": "E-Mail UID (fuer action=read)"},
     "limit": {
         "type": "integer",
         "description": "Maximale Anzahl Ergebnisse",
-        "default": 10
-    }
+        "default": 10,
+    },
 }
 
 
@@ -65,7 +59,9 @@ async def execute(params: dict) -> str:
                 date = e.get("date", "")
                 if date:
                     date = date[:16].replace("T", " ")
-                lines.append(f"- **{e['subject']}** von {e['sender']} ({date}) [UID: {e['uid']}]")
+                lines.append(
+                    f"- **{e['subject']}** von {e['sender']} ({date}) [UID: {e['uid']}]"
+                )
             return "\n".join(lines)
 
         elif action == "search":
@@ -79,7 +75,9 @@ async def execute(params: dict) -> str:
                 date = e.get("date", "")
                 if date:
                     date = date[:16].replace("T", " ")
-                lines.append(f"- **{e['subject']}** von {e['sender']} ({date}) [UID: {e['uid']}]")
+                lines.append(
+                    f"- **{e['subject']}** von {e['sender']} ({date}) [UID: {e['uid']}]"
+                )
             return "\n".join(lines)
 
         elif action == "read":
@@ -99,7 +97,9 @@ async def execute(params: dict) -> str:
             )
 
         else:
-            return f"Unbekannte Aktion: {action}. Verwende 'unread', 'search' oder 'read'."
+            return (
+                f"Unbekannte Aktion: {action}. Verwende 'unread', 'search' oder 'read'."
+            )
 
     except Exception as e:
         return f"Fehler beim E-Mail-Zugriff: {str(e)}"

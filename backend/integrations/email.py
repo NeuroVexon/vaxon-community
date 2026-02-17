@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 
 class EmailMessage:
     """Parsed E-Mail"""
+
     def __init__(
         self,
         uid: str,
@@ -129,6 +130,7 @@ class EmailClient:
 
     async def list_unread(self, limit: int = 20) -> list[dict]:
         """Liste ungelesene E-Mails (readonly — markiert NICHTS als gelesen)"""
+
         def _fetch():
             conn = self._connect_imap()
             try:
@@ -142,11 +144,15 @@ class EmailClient:
                 uids = uids[-limit:][::-1]
                 results = []
                 for uid in uids:
-                    _, msg_data = conn.fetch(uid, "(BODY.PEEK[HEADER.FIELDS (FROM SUBJECT DATE)])")
+                    _, msg_data = conn.fetch(
+                        uid, "(BODY.PEEK[HEADER.FIELDS (FROM SUBJECT DATE)])"
+                    )
                     if msg_data and msg_data[0]:
                         raw = msg_data[0][1]
                         msg = email.message_from_bytes(raw)
-                        subject = _decode_header_value(msg.get("Subject", "(kein Betreff)"))
+                        subject = _decode_header_value(
+                            msg.get("Subject", "(kein Betreff)")
+                        )
                         sender = _decode_header_value(msg.get("From", "unbekannt"))
                         date_str = msg.get("Date")
                         date = None
@@ -155,12 +161,14 @@ class EmailClient:
                                 date = parsedate_to_datetime(date_str)
                             except Exception:
                                 pass
-                        results.append({
-                            "uid": uid.decode(),
-                            "subject": subject,
-                            "sender": sender,
-                            "date": date.isoformat() if date else None,
-                        })
+                        results.append(
+                            {
+                                "uid": uid.decode(),
+                                "subject": subject,
+                                "sender": sender,
+                                "date": date.isoformat() if date else None,
+                            }
+                        )
                 return results
             finally:
                 conn.logout()
@@ -169,6 +177,7 @@ class EmailClient:
 
     async def read_email(self, uid: str) -> Optional[dict]:
         """Liest eine E-Mail vollstaendig (readonly — PEEK)"""
+
         def _fetch():
             conn = self._connect_imap()
             try:
@@ -205,6 +214,7 @@ class EmailClient:
 
     async def search_emails(self, query: str, limit: int = 10) -> list[dict]:
         """Durchsucht E-Mails nach Betreff (readonly)"""
+
         def _fetch():
             conn = self._connect_imap()
             try:
@@ -218,11 +228,15 @@ class EmailClient:
                 uids = uids[-limit:][::-1]
                 results = []
                 for uid in uids:
-                    _, msg_data = conn.fetch(uid, "(BODY.PEEK[HEADER.FIELDS (FROM SUBJECT DATE)])")
+                    _, msg_data = conn.fetch(
+                        uid, "(BODY.PEEK[HEADER.FIELDS (FROM SUBJECT DATE)])"
+                    )
                     if msg_data and msg_data[0]:
                         raw = msg_data[0][1]
                         msg = email.message_from_bytes(raw)
-                        subject = _decode_header_value(msg.get("Subject", "(kein Betreff)"))
+                        subject = _decode_header_value(
+                            msg.get("Subject", "(kein Betreff)")
+                        )
                         sender = _decode_header_value(msg.get("From", "unbekannt"))
                         date_str = msg.get("Date")
                         date = None
@@ -231,12 +245,14 @@ class EmailClient:
                                 date = parsedate_to_datetime(date_str)
                             except Exception:
                                 pass
-                        results.append({
-                            "uid": uid.decode(),
-                            "subject": subject,
-                            "sender": sender,
-                            "date": date.isoformat() if date else None,
-                        })
+                        results.append(
+                            {
+                                "uid": uid.decode(),
+                                "subject": subject,
+                                "sender": sender,
+                                "date": date.isoformat() if date else None,
+                            }
+                        )
                 return results
             finally:
                 conn.logout()
@@ -247,8 +263,11 @@ class EmailClient:
     # SMTP — send (requires Approval in Agent flow)
     # ------------------------------------------------------------------
 
-    async def send_email(self, to: str, subject: str, body: str, html: bool = False) -> str:
+    async def send_email(
+        self, to: str, subject: str, body: str, html: bool = False
+    ) -> str:
         """Sendet eine E-Mail via SMTP"""
+
         def _send():
             msg = MIMEMultipart("alternative")
             msg["From"] = self.smtp_from
@@ -285,6 +304,7 @@ class EmailClient:
 
         # IMAP Test
         try:
+
             def _test_imap():
                 conn = imaplib.IMAP4_SSL(self.imap_host, self.imap_port)
                 conn.login(self.imap_user, self.imap_password)
@@ -298,6 +318,7 @@ class EmailClient:
         # SMTP Test
         if self.smtp_host:
             try:
+
                 def _test_smtp():
                     with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
                         server.ehlo()

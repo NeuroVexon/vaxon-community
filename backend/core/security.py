@@ -124,8 +124,8 @@ def validate_url(url: str) -> bool:
         "127.0.0.1",
         "0.0.0.0",
         "169.254.",  # Link-local
-        "10.",       # Private
-        "172.16.",   # Private
+        "10.",  # Private
+        "172.16.",  # Private
         "172.17.",
         "172.18.",
         "172.19.",
@@ -141,9 +141,9 @@ def validate_url(url: str) -> bool:
         "172.29.",
         "172.30.",
         "172.31.",
-        "192.168.", # Private
-        "::1",      # IPv6 localhost
-        "fe80:",    # IPv6 link-local
+        "192.168.",  # Private
+        "::1",  # IPv6 localhost
+        "fe80:",  # IPv6 link-local
     ]
 
     for blocked in blocked_hosts:
@@ -191,7 +191,10 @@ def validate_shell_command(command: str) -> tuple[bool, str]:
     if base_cmd in whitelist_bases:
         return True, ""
 
-    return False, f"Command '{base_cmd}' not in whitelist. Allowed: {', '.join(settings.shell_whitelist[:5])}"
+    return (
+        False,
+        f"Command '{base_cmd}' not in whitelist. Allowed: {', '.join(settings.shell_whitelist[:5])}",
+    )
 
 
 def sanitize_filename(filename: str) -> str:
@@ -234,10 +237,7 @@ class RateLimiter:
             self._requests[key] = []
 
         # Remove old requests
-        self._requests[key] = [
-            t for t in self._requests[key]
-            if t > window_start
-        ]
+        self._requests[key] = [t for t in self._requests[key] if t > window_start]
 
         # Check limit
         if len(self._requests[key]) >= self.max_requests:

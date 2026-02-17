@@ -37,6 +37,7 @@ class GeminiProvider(BaseLLMProvider):
         if self._client is None or self._current_key != self.api_key:
             try:
                 from google import genai
+
                 self._client = genai.Client(api_key=self.api_key)
                 self._current_key = self.api_key
             except ImportError:
@@ -57,7 +58,7 @@ class GeminiProvider(BaseLLMProvider):
                 gemini_func = {
                     "name": func["name"],
                     "description": func.get("description", ""),
-                    "parameters": params
+                    "parameters": params,
                 }
                 gemini_functions.append(gemini_func)
 
@@ -67,7 +68,7 @@ class GeminiProvider(BaseLLMProvider):
         self,
         messages: list[ChatMessage],
         tools: Optional[list[dict]] = None,
-        stream: bool = False
+        stream: bool = False,
     ) -> LLMResponse:
         """Send chat message to Gemini"""
         client = self._get_client()
@@ -80,15 +81,17 @@ class GeminiProvider(BaseLLMProvider):
             if m.role == "system":
                 system_instruction = m.content
             elif m.role == "user":
-                contents.append(types.Content(
-                    role="user",
-                    parts=[types.Part.from_text(text=m.content)]
-                ))
+                contents.append(
+                    types.Content(
+                        role="user", parts=[types.Part.from_text(text=m.content)]
+                    )
+                )
             elif m.role == "assistant":
-                contents.append(types.Content(
-                    role="model",
-                    parts=[types.Part.from_text(text=m.content)]
-                ))
+                contents.append(
+                    types.Content(
+                        role="model", parts=[types.Part.from_text(text=m.content)]
+                    )
+                )
 
         # Build config
         config_kwargs = {}
@@ -101,13 +104,16 @@ class GeminiProvider(BaseLLMProvider):
             gemini_fns = self._convert_tools_to_gemini(tools)
             if gemini_fns:
                 from google.genai.types import FunctionDeclaration, Tool
+
                 declarations = []
                 for fn in gemini_fns:
-                    declarations.append(FunctionDeclaration(
-                        name=fn["name"],
-                        description=fn["description"],
-                        parameters=fn["parameters"]
-                    ))
+                    declarations.append(
+                        FunctionDeclaration(
+                            name=fn["name"],
+                            description=fn["description"],
+                            parameters=fn["parameters"],
+                        )
+                    )
                 gemini_tools = [Tool(function_declarations=declarations)]
                 config_kwargs["tools"] = gemini_tools
 
@@ -133,11 +139,13 @@ class GeminiProvider(BaseLLMProvider):
                         if tool_calls is None:
                             tool_calls = []
                         fc = part.function_call
-                        tool_calls.append(ToolCall(
-                            id=f"gemini_{len(tool_calls)}",
-                            name=fc.name,
-                            parameters=dict(fc.args) if fc.args else {}
-                        ))
+                        tool_calls.append(
+                            ToolCall(
+                                id=f"gemini_{len(tool_calls)}",
+                                name=fc.name,
+                                parameters=dict(fc.args) if fc.args else {},
+                            )
+                        )
 
         finish_reason = "stop"
         if response.candidates:
@@ -148,15 +156,11 @@ class GeminiProvider(BaseLLMProvider):
                 finish_reason = fr_str.lower()
 
         return LLMResponse(
-            content=content,
-            tool_calls=tool_calls,
-            finish_reason=finish_reason
+            content=content, tool_calls=tool_calls, finish_reason=finish_reason
         )
 
     async def chat_stream(
-        self,
-        messages: list[ChatMessage],
-        tools: Optional[list[dict]] = None
+        self, messages: list[ChatMessage], tools: Optional[list[dict]] = None
     ) -> AsyncGenerator[str, None]:
         """Stream chat response from Gemini"""
         client = self._get_client()
@@ -169,15 +173,17 @@ class GeminiProvider(BaseLLMProvider):
             if m.role == "system":
                 system_instruction = m.content
             elif m.role == "user":
-                contents.append(types.Content(
-                    role="user",
-                    parts=[types.Part.from_text(text=m.content)]
-                ))
+                contents.append(
+                    types.Content(
+                        role="user", parts=[types.Part.from_text(text=m.content)]
+                    )
+                )
             elif m.role == "assistant":
-                contents.append(types.Content(
-                    role="model",
-                    parts=[types.Part.from_text(text=m.content)]
-                ))
+                contents.append(
+                    types.Content(
+                        role="model", parts=[types.Part.from_text(text=m.content)]
+                    )
+                )
 
         config_kwargs = {}
         if system_instruction:
@@ -188,13 +194,16 @@ class GeminiProvider(BaseLLMProvider):
             gemini_fns = self._convert_tools_to_gemini(tools)
             if gemini_fns:
                 from google.genai.types import FunctionDeclaration, Tool
+
                 declarations = []
                 for fn in gemini_fns:
-                    declarations.append(FunctionDeclaration(
-                        name=fn["name"],
-                        description=fn["description"],
-                        parameters=fn["parameters"]
-                    ))
+                    declarations.append(
+                        FunctionDeclaration(
+                            name=fn["name"],
+                            description=fn["description"],
+                            parameters=fn["parameters"],
+                        )
+                    )
                 config_kwargs["tools"] = [Tool(function_declarations=declarations)]
 
         config = types.GenerateContentConfig(**config_kwargs)

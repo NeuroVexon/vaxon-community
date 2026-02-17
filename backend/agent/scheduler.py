@@ -97,6 +97,7 @@ class TaskScheduler:
 
             # Load language from settings for scheduled context
             from db.models import Settings as SettingsModel
+
             lang_result = await db.execute(
                 select(SettingsModel).where(SettingsModel.key == "language")
             )
@@ -108,10 +109,11 @@ class TaskScheduler:
 
             try:
                 result = await asyncio.wait_for(
-                    self._run_prompt(task, db),
-                    timeout=TASK_TIMEOUT_SECONDS
+                    self._run_prompt(task, db), timeout=TASK_TIMEOUT_SECONDS
                 )
-                task.last_result = result[:MAX_RESULT_LENGTH] if result else t("scheduler.no_result")
+                task.last_result = (
+                    result[:MAX_RESULT_LENGTH] if result else t("scheduler.no_result")
+                )
                 logger.info(f"Task '{task.name}' erfolgreich")
             except asyncio.TimeoutError:
                 task.last_result = t("scheduler.timeout", seconds=TASK_TIMEOUT_SECONDS)
@@ -126,6 +128,7 @@ class TaskScheduler:
         """Prompt an LLM senden und Antwort holen"""
         # Load settings for LLM provider
         from db.models import Settings as SettingsModel
+
         result = await db.execute(select(SettingsModel))
         db_settings = {s.key: s.value for s in result.scalars().all()}
 
@@ -138,11 +141,8 @@ class TaskScheduler:
             return t("scheduler.invalid_provider", provider=current_provider)
 
         messages = [
-            ChatMessage(
-                role="assistant",
-                content=t("scheduler.intro", name=task.name)
-            ),
-            ChatMessage(role="user", content=task.prompt)
+            ChatMessage(role="assistant", content=t("scheduler.intro", name=task.name)),
+            ChatMessage(role="user", content=task.prompt),
         ]
 
         response = await provider.chat(messages)
@@ -153,6 +153,7 @@ class TaskScheduler:
         await self._execute_task(task_id)
 
         from db.database import async_session
+
         async with async_session() as db:
             task = await db.get(ScheduledTask, task_id)
             return task.last_result if task else t("scheduler.not_found")

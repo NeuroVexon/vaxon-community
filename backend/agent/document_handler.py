@@ -16,18 +16,39 @@ logger = logging.getLogger(__name__)
 
 # Erlaubte MIME-Types
 ALLOWED_EXTENSIONS = {
-    ".pdf", ".txt", ".md", ".csv", ".json",
-    ".py", ".js", ".ts", ".html", ".xml", ".yaml", ".yml",
-    ".png", ".jpg", ".jpeg",
+    ".pdf",
+    ".txt",
+    ".md",
+    ".csv",
+    ".json",
+    ".py",
+    ".js",
+    ".ts",
+    ".html",
+    ".xml",
+    ".yaml",
+    ".yml",
+    ".png",
+    ".jpg",
+    ".jpeg",
 }
 
 ALLOWED_MIME_TYPES = {
     "application/pdf",
-    "text/plain", "text/markdown", "text/csv", "text/html", "text/xml",
-    "application/json", "application/xml",
-    "text/x-python", "text/javascript", "text/typescript",
-    "application/x-yaml", "text/yaml",
-    "image/png", "image/jpeg",
+    "text/plain",
+    "text/markdown",
+    "text/csv",
+    "text/html",
+    "text/xml",
+    "application/json",
+    "application/xml",
+    "text/x-python",
+    "text/javascript",
+    "text/typescript",
+    "application/x-yaml",
+    "text/yaml",
+    "image/png",
+    "image/jpeg",
 }
 
 MAX_TEXT_LENGTH = 8000  # Zeichen fuer Context
@@ -75,6 +96,7 @@ def _extract_pdf(file_path: str) -> str:
     """PDF Text extrahieren"""
     try:
         import fitz  # pymupdf
+
         doc = fitz.open(file_path)
         text = ""
         for page in doc:

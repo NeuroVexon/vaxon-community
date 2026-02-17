@@ -7,7 +7,9 @@ IMMER mit Approval — der User sieht Empfaenger, Betreff und Text vor dem Sende
 
 SKILL_NAME = "email_send"
 SKILL_DISPLAY_NAME = "E-Mail senden"
-SKILL_DESCRIPTION = "Sendet eine E-Mail (IMMER mit Genehmigung — zeigt Empfaenger, Betreff und Text)"
+SKILL_DESCRIPTION = (
+    "Sendet eine E-Mail (IMMER mit Genehmigung — zeigt Empfaenger, Betreff und Text)"
+)
 SKILL_VERSION = "1.0.0"
 SKILL_AUTHOR = "NeuroVexon"
 SKILL_RISK_LEVEL = "high"
@@ -16,18 +18,18 @@ SKILL_PARAMETERS = {
     "to": {
         "type": "string",
         "description": "Empfaenger E-Mail-Adresse",
-        "required": True
+        "required": True,
     },
     "subject": {
         "type": "string",
         "description": "Betreff der E-Mail",
-        "required": True
+        "required": True,
     },
     "body": {
         "type": "string",
         "description": "Inhalt der E-Mail (Klartext)",
-        "required": True
-    }
+        "required": True,
+    },
 }
 
 

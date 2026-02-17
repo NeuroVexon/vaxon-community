@@ -12,7 +12,11 @@ SKILL_AUTHOR = "NeuroVexon"
 SKILL_RISK_LEVEL = "low"
 
 SKILL_PARAMETERS = {
-    "text": {"type": "string", "description": "Der zu analysierende Text", "required": True}
+    "text": {
+        "type": "string",
+        "description": "Der zu analysierende Text",
+        "required": True,
+    }
 }
 
 
@@ -35,7 +39,7 @@ def execute(params: dict) -> dict:
     words = len(text.split())
     characters = len(text)
     characters_no_spaces = len(text.replace(" ", "").replace("\n", ""))
-    sentences = len(re.split(r'[.!?]+', text.strip())) - 1
+    sentences = len(re.split(r"[.!?]+", text.strip())) - 1
     paragraphs = len([p for p in text.split("\n\n") if p.strip()])
     reading_time = round(words / 200, 1)  # ~200 WPM
 

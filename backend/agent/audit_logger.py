@@ -39,7 +39,7 @@ class AuditLogger:
         result: Optional[str] = None,
         error: Optional[str] = None,
         user_decision: Optional[str] = None,
-        execution_time_ms: Optional[int] = None
+        execution_time_ms: Optional[int] = None,
     ) -> AuditLog:
         """Create an audit log entry"""
 
@@ -53,7 +53,7 @@ class AuditLogger:
             result=result[:1000] if result else None,  # Truncate long results
             error=error,
             user_decision=user_decision,
-            execution_time_ms=execution_time_ms
+            execution_time_ms=execution_time_ms,
         )
 
         self.db.add(entry)
@@ -68,25 +68,18 @@ class AuditLogger:
         return entry
 
     async def log_tool_request(
-        self,
-        session_id: str,
-        tool_name: str,
-        tool_params: dict
+        self, session_id: str, tool_name: str, tool_params: dict
     ) -> AuditLog:
         """Log a tool request"""
         return await self.log(
             session_id=session_id,
             event_type=AuditEventType.TOOL_REQUESTED,
             tool_name=tool_name,
-            tool_params=tool_params
+            tool_params=tool_params,
         )
 
     async def log_tool_approval(
-        self,
-        session_id: str,
-        tool_name: str,
-        tool_params: dict,
-        decision: str
+        self, session_id: str, tool_name: str, tool_params: dict, decision: str
     ) -> AuditLog:
         """Log a tool approval"""
         return await self.log(
@@ -94,7 +87,7 @@ class AuditLogger:
             event_type=AuditEventType.TOOL_APPROVED,
             tool_name=tool_name,
             tool_params=tool_params,
-            user_decision=decision
+            user_decision=decision,
         )
 
     async def log_tool_rejection(
@@ -102,7 +95,7 @@ class AuditLogger:
         session_id: str,
         tool_name: str,
         tool_params: dict,
-        reason: str = "rejected"
+        reason: str = "rejected",
     ) -> AuditLog:
         """Log a tool rejection"""
         return await self.log(
@@ -110,7 +103,7 @@ class AuditLogger:
             event_type=AuditEventType.TOOL_REJECTED,
             tool_name=tool_name,
             tool_params=tool_params,
-            user_decision=reason
+            user_decision=reason,
         )
 
     async def log_tool_execution(
@@ -119,7 +112,7 @@ class AuditLogger:
         tool_name: str,
         tool_params: dict,
         result: str,
-        execution_time_ms: int
+        execution_time_ms: int,
     ) -> AuditLog:
         """Log a successful tool execution"""
         return await self.log(
@@ -128,15 +121,11 @@ class AuditLogger:
             tool_name=tool_name,
             tool_params=tool_params,
             result=result,
-            execution_time_ms=execution_time_ms
+            execution_time_ms=execution_time_ms,
         )
 
     async def log_tool_failure(
-        self,
-        session_id: str,
-        tool_name: str,
-        tool_params: dict,
-        error: str
+        self, session_id: str, tool_name: str, tool_params: dict, error: str
     ) -> AuditLog:
         """Log a failed tool execution"""
         return await self.log(
@@ -144,5 +133,5 @@ class AuditLogger:
             event_type=AuditEventType.TOOL_FAILED,
             tool_name=tool_name,
             tool_params=tool_params,
-            error=error
+            error=error,
         )

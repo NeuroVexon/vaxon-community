@@ -8,7 +8,7 @@ Uses Accept-Language header from frontend requests.
 from typing import Optional
 from contextvars import ContextVar
 
-_current_language: ContextVar[str] = ContextVar('lang', default='de')
+_current_language: ContextVar[str] = ContextVar("lang", default="de")
 
 TRANSLATIONS = {
     "de": {
@@ -18,22 +18,18 @@ TRANSLATIONS = {
         "orch.tool_blocked": "Tool wurde vom Benutzer blockiert",
         "orch.tool_blocked_msg": "Tool {tool} wurde blockiert.",
         "orch.user_rejected": "Benutzer hat {tool} abgelehnt.",
-
         # Chat
         "chat.agent_not_found": "Agent nicht gefunden oder deaktiviert",
         "chat.intro_default": "Ich bin Axon, dein KI-Assistent.",
         "chat.intro_agent": "Ich bin {name}, dein KI-Assistent.",
         "chat.docs_uploaded": "Der User hat folgende Dokumente hochgeladen:",
-
         # Upload
         "upload.no_filename": "Kein Dateiname",
         "upload.type_not_allowed": "Dateityp nicht erlaubt. Erlaubt: {allowed}",
         "upload.too_large": "Datei zu gross (max {max_mb} MB)",
         "upload.not_found": "Dokument nicht gefunden",
-
         # Settings
         "settings.not_configured": "Nicht konfiguriert",
-
         # Scheduler
         "scheduler.started": "TaskScheduler gestartet",
         "scheduler.stopped": "TaskScheduler gestoppt",
@@ -49,13 +45,11 @@ TRANSLATIONS = {
         "scheduler.intro": "Ich bin Axon. Ich fuehre jetzt den geplanten Task '{name}' aus.",
         "scheduler.no_response": "Keine Antwort vom LLM",
         "scheduler.not_found": "Task nicht gefunden",
-
         # Tool handlers
         "tool.memory_saved": "Gespeichert: '{key}' — {content}",
         "tool.memory_not_found": "Keine Erinnerungen gefunden.",
         "tool.memory_deleted": "Erinnerung '{key}' geloescht.",
         "tool.memory_key_not_found": "Keine Erinnerung mit Key '{key}' gefunden.",
-
         # Workflows
         "wf.not_found": "Workflow {id} nicht gefunden",
         "wf.no_steps": "Workflow hat keine Steps",
@@ -64,7 +58,6 @@ TRANSLATIONS = {
         "wf.step_intro": "Ich fuehre Workflow '{name}' aus, Step {step}/{total}.",
         "wf.no_response": "Keine Antwort",
         "wf.var_missing": "[{var} nicht vorhanden]",
-
         # Tool descriptions (DE)
         "tool.desc.file_read": "Liest den Inhalt einer Datei",
         "tool.desc.file_write": "Schreibt Inhalt in eine Datei (nur im /outputs/ Verzeichnis)",
@@ -78,7 +71,6 @@ TRANSLATIONS = {
         "tool.desc.email_inbox": "Liest ungelesene E-Mails, durchsucht den Posteingang oder liest eine bestimmte E-Mail",
         "tool.desc.email_send": "Sendet eine E-Mail (IMMER mit Genehmigung)",
         "tool.desc.code_execute": "Fuehrt Python-Code in einer sicheren Docker-Sandbox aus (kein Netzwerk, isoliert)",
-
         # Telegram / Discord Bot
         "bot.access_denied": "Zugriff verweigert.",
         "bot.welcome": "Willkommen bei Axon by NeuroVexon!\n\nSende mir eine Nachricht und ich leite sie an die KI weiter.\nWenn ein Tool ausgefuehrt werden soll, bekommst du Buttons zur Genehmigung.",
@@ -112,22 +104,18 @@ TRANSLATIONS = {
         "orch.tool_blocked": "Tool was blocked by the user",
         "orch.tool_blocked_msg": "Tool {tool} was blocked.",
         "orch.user_rejected": "User rejected {tool}.",
-
         # Chat
         "chat.agent_not_found": "Agent not found or disabled",
         "chat.intro_default": "I am Axon, your AI assistant.",
         "chat.intro_agent": "I am {name}, your AI assistant.",
         "chat.docs_uploaded": "The user has uploaded the following documents:",
-
         # Upload
         "upload.no_filename": "No filename provided",
         "upload.type_not_allowed": "File type not allowed. Allowed: {allowed}",
         "upload.too_large": "File too large (max {max_mb} MB)",
         "upload.not_found": "Document not found",
-
         # Settings
         "settings.not_configured": "Not configured",
-
         # Scheduler
         "scheduler.started": "TaskScheduler started",
         "scheduler.stopped": "TaskScheduler stopped",
@@ -143,13 +131,11 @@ TRANSLATIONS = {
         "scheduler.intro": "I am Axon. I am now executing the scheduled task '{name}'.",
         "scheduler.no_response": "No response from LLM",
         "scheduler.not_found": "Task not found",
-
         # Tool handlers
         "tool.memory_saved": "Saved: '{key}' — {content}",
         "tool.memory_not_found": "No memories found.",
         "tool.memory_deleted": "Memory '{key}' deleted.",
         "tool.memory_key_not_found": "No memory with key '{key}' found.",
-
         # Workflows
         "wf.not_found": "Workflow {id} not found",
         "wf.no_steps": "Workflow has no steps",
@@ -158,7 +144,6 @@ TRANSLATIONS = {
         "wf.step_intro": "I am executing workflow '{name}', step {step}/{total}.",
         "wf.no_response": "No response",
         "wf.var_missing": "[{var} not available]",
-
         # Tool descriptions (EN)
         "tool.desc.file_read": "Read the contents of a file",
         "tool.desc.file_write": "Write content to a file (only in /outputs/ directory)",
@@ -172,7 +157,6 @@ TRANSLATIONS = {
         "tool.desc.email_inbox": "Read unread emails, search inbox, or read a specific email",
         "tool.desc.email_send": "Send an email (ALWAYS requires approval)",
         "tool.desc.code_execute": "Execute Python code in a secure Docker sandbox (no network, isolated)",
-
         # Telegram / Discord Bot
         "bot.access_denied": "Access denied.",
         "bot.welcome": "Welcome to Axon by NeuroVexon!\n\nSend me a message and I'll forward it to the AI.\nWhen a tool needs to run, you'll get approval buttons.",

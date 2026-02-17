@@ -11,12 +11,15 @@ from agent.memory import MemoryManager, MAX_MEMORY_CONTENT_LENGTH
 # Embedding serialization only available with v2.0 embeddings
 try:
     from agent.memory import _serialize_embedding, _deserialize_embedding
+
     HAS_EMBEDDING_SERIALIZATION = True
 except ImportError:
     HAS_EMBEDDING_SERIALIZATION = False
 
 
-@pytest.mark.skipif(not HAS_EMBEDDING_SERIALIZATION, reason="Embedding serialization not available")
+@pytest.mark.skipif(
+    not HAS_EMBEDDING_SERIALIZATION, reason="Embedding serialization not available"
+)
 class TestEmbeddingSerialization:
     """Tests for embedding serialization/deserialization"""
 

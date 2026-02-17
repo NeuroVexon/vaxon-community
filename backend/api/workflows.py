@@ -39,9 +39,7 @@ class WorkflowUpdate(BaseModel):
 @router.get("")
 async def list_workflows(db: AsyncSession = Depends(get_db)):
     """Alle Workflows auflisten"""
-    result = await db.execute(
-        select(Workflow).order_by(Workflow.created_at.desc())
-    )
+    result = await db.execute(select(Workflow).order_by(Workflow.created_at.desc()))
     workflows = result.scalars().all()
     return [workflow_to_dict(wf) for wf in workflows]
 
@@ -62,10 +60,15 @@ async def create_workflow(data: WorkflowCreate, db: AsyncSession = Depends(get_d
     result = await db.execute(select(Workflow))
     count = len(result.scalars().all())
     if count >= MAX_WORKFLOWS:
-        raise HTTPException(status_code=400, detail=f"Maximale Anzahl Workflows erreicht ({MAX_WORKFLOWS})")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Maximale Anzahl Workflows erreicht ({MAX_WORKFLOWS})",
+        )
 
     if not data.steps:
-        raise HTTPException(status_code=400, detail="Workflow muss mindestens einen Step haben")
+        raise HTTPException(
+            status_code=400, detail="Workflow muss mindestens einen Step haben"
+        )
 
     if data.approval_mode not in ("each_step", "once_at_start", "never"):
         raise HTTPException(status_code=400, detail="Ungueltiger approval_mode")
@@ -86,9 +89,7 @@ async def create_workflow(data: WorkflowCreate, db: AsyncSession = Depends(get_d
 
 @router.put("/{workflow_id}")
 async def update_workflow(
-    workflow_id: str,
-    data: WorkflowUpdate,
-    db: AsyncSession = Depends(get_db)
+    workflow_id: str, data: WorkflowUpdate, db: AsyncSession = Depends(get_db)
 ):
     """Workflow aktualisieren"""
     wf = await db.get(Workflow, workflow_id)
@@ -96,7 +97,11 @@ async def update_workflow(
         raise HTTPException(status_code=404, detail="Workflow nicht gefunden")
 
     updates = data.model_dump(exclude_unset=True)
-    if "approval_mode" in updates and updates["approval_mode"] not in ("each_step", "once_at_start", "never"):
+    if "approval_mode" in updates and updates["approval_mode"] not in (
+        "each_step",
+        "once_at_start",
+        "never",
+    ):
         raise HTTPException(status_code=400, detail="Ungueltiger approval_mode")
 
     for key, value in updates.items():

@@ -91,9 +91,7 @@ async def create_agent(data: AgentCreate, db: AsyncSession = Depends(get_db)):
 
 @router.put("/{agent_id}")
 async def update_agent(
-    agent_id: str,
-    data: AgentUpdate,
-    db: AsyncSession = Depends(get_db)
+    agent_id: str, data: AgentUpdate, db: AsyncSession = Depends(get_db)
 ):
     """Agent bearbeiten"""
     manager = AgentManager(db)
@@ -111,7 +109,6 @@ async def delete_agent(agent_id: str, db: AsyncSession = Depends(get_db)):
     deleted = await manager.delete_agent(agent_id)
     if not deleted:
         raise HTTPException(
-            status_code=400,
-            detail="Agent nicht gefunden oder ist der Default-Agent"
+            status_code=400, detail="Agent nicht gefunden oder ist der Default-Agent"
         )
     return {"status": "deleted"}

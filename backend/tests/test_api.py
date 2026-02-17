@@ -16,11 +16,14 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 try:
     from main import app
     from fastapi.testclient import TestClient
+
     HAS_DEPS = True
 except ImportError:
     HAS_DEPS = False
 
-pytestmark = pytest.mark.skipif(not HAS_DEPS, reason="Server dependencies not installed")
+pytestmark = pytest.mark.skipif(
+    not HAS_DEPS, reason="Server dependencies not installed"
+)
 
 
 @pytest.fixture

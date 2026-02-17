@@ -24,6 +24,7 @@ from db.models import Agent
 # Helpers
 # ============================================================
 
+
 class MockLLMProvider(BaseLLMProvider):
     """Mock LLM that returns pre-configured responses"""
 
@@ -55,9 +56,7 @@ async def collect_events(orchestrator, session_id, messages, on_approval=None):
         on_approval = AsyncMock(return_value=PermissionScope.ONCE)
     events = []
     async for event in orchestrator.process_message(
-        session_id=session_id,
-        messages=messages,
-        on_approval_needed=on_approval
+        session_id=session_id, messages=messages, on_approval_needed=on_approval
     ):
         events.append(event)
     return events
@@ -67,6 +66,7 @@ async def collect_events(orchestrator, session_id, messages, on_approval=None):
 # Fixtures
 # ============================================================
 
+
 @pytest.fixture
 def test_registry():
     """Create a minimal ToolRegistry for testing"""
@@ -74,44 +74,52 @@ def test_registry():
     registry._tools = {}
 
     # Low-risk, no approval needed (like web_search)
-    registry.register(ToolDefinition(
-        name="web_search",
-        description="Search the web",
-        description_de="Websuche",
-        parameters={"query": {"type": "string", "required": True}},
-        risk_level=RiskLevel.LOW,
-        requires_approval=False
-    ))
+    registry.register(
+        ToolDefinition(
+            name="web_search",
+            description="Search the web",
+            description_de="Websuche",
+            parameters={"query": {"type": "string", "required": True}},
+            risk_level=RiskLevel.LOW,
+            requires_approval=False,
+        )
+    )
 
     # Medium-risk, needs approval
-    registry.register(ToolDefinition(
-        name="file_read",
-        description="Read a file",
-        description_de="Datei lesen",
-        parameters={"path": {"type": "string", "required": True}},
-        risk_level=RiskLevel.MEDIUM,
-        requires_approval=True
-    ))
+    registry.register(
+        ToolDefinition(
+            name="file_read",
+            description="Read a file",
+            description_de="Datei lesen",
+            parameters={"path": {"type": "string", "required": True}},
+            risk_level=RiskLevel.MEDIUM,
+            requires_approval=True,
+        )
+    )
 
     # High-risk, needs approval
-    registry.register(ToolDefinition(
-        name="shell_execute",
-        description="Execute shell command",
-        description_de="Shell-Befehl ausfuehren",
-        parameters={"command": {"type": "string", "required": True}},
-        risk_level=RiskLevel.HIGH,
-        requires_approval=True
-    ))
+    registry.register(
+        ToolDefinition(
+            name="shell_execute",
+            description="Execute shell command",
+            description_de="Shell-Befehl ausfuehren",
+            parameters={"command": {"type": "string", "required": True}},
+            risk_level=RiskLevel.HIGH,
+            requires_approval=True,
+        )
+    )
 
     # Low-risk, no approval (like memory tools)
-    registry.register(ToolDefinition(
-        name="memory_save",
-        description="Save to memory",
-        description_de="Im Gedaechtnis speichern",
-        parameters={"key": {"type": "string", "required": True}},
-        risk_level=RiskLevel.LOW,
-        requires_approval=False
-    ))
+    registry.register(
+        ToolDefinition(
+            name="memory_save",
+            description="Save to memory",
+            description_de="Im Gedaechtnis speichern",
+            parameters={"key": {"type": "string", "required": True}},
+            risk_level=RiskLevel.LOW,
+            requires_approval=False,
+        )
+    )
 
     return registry
 
@@ -159,19 +167,22 @@ def mock_agent_locked():
 # Basic Flow — No Tool Calls
 # ============================================================
 
+
 class TestOrchestratorBasicFlow:
     """Tests for simple LLM responses without tools"""
 
     @pytest.mark.asyncio
-    async def test_text_response_yields_text_and_done(self, db, test_registry, test_permissions):
-        llm = MockLLMProvider([
-            LLMResponse(content="Hallo, ich bin Axon!", tool_calls=None)
-        ])
+    async def test_text_response_yields_text_and_done(
+        self, db, test_registry, test_permissions
+    ):
+        llm = MockLLMProvider(
+            [LLMResponse(content="Hallo, ich bin Axon!", tool_calls=None)]
+        )
         orch = AgentOrchestrator(llm, db, test_registry, test_permissions)
 
-        events = await collect_events(orch, "sess-1", [
-            ChatMessage(role="user", content="Hallo")
-        ])
+        events = await collect_events(
+            orch, "sess-1", [ChatMessage(role="user", content="Hallo")]
+        )
 
         assert len(events) == 2
         assert events[0]["type"] == "text"
@@ -179,30 +190,26 @@ class TestOrchestratorBasicFlow:
         assert events[1]["type"] == "done"
 
     @pytest.mark.asyncio
-    async def test_empty_content_yields_only_done(self, db, test_registry, test_permissions):
-        llm = MockLLMProvider([
-            LLMResponse(content=None, tool_calls=None)
-        ])
+    async def test_empty_content_yields_only_done(
+        self, db, test_registry, test_permissions
+    ):
+        llm = MockLLMProvider([LLMResponse(content=None, tool_calls=None)])
         orch = AgentOrchestrator(llm, db, test_registry, test_permissions)
 
-        events = await collect_events(orch, "sess-2", [
-            ChatMessage(role="user", content="Test")
-        ])
+        events = await collect_events(
+            orch, "sess-2", [ChatMessage(role="user", content="Test")]
+        )
 
         assert len(events) == 1
         assert events[0]["type"] == "done"
 
     @pytest.mark.asyncio
     async def test_llm_called_with_tools(self, db, test_registry, test_permissions):
-        llm = MockLLMProvider([
-            LLMResponse(content="OK", tool_calls=None)
-        ])
+        llm = MockLLMProvider([LLMResponse(content="OK", tool_calls=None)])
         llm.chat = AsyncMock(return_value=LLMResponse(content="OK", tool_calls=None))
         orch = AgentOrchestrator(llm, db, test_registry, test_permissions)
 
-        await collect_events(orch, "sess-3", [
-            ChatMessage(role="user", content="Test")
-        ])
+        await collect_events(orch, "sess-3", [ChatMessage(role="user", content="Test")])
 
         llm.chat.assert_called_once()
         call_kwargs = llm.chat.call_args
@@ -213,26 +220,33 @@ class TestOrchestratorBasicFlow:
 # Auto-Approved Tools (requires_approval=False)
 # ============================================================
 
+
 class TestOrchestratorAutoApprove:
     """Tests for tools that skip approval (requires_approval=False)"""
 
     @pytest.mark.asyncio
-    async def test_auto_approved_tool_executes(self, db, test_registry, test_permissions):
-        llm = MockLLMProvider([
-            LLMResponse(
-                content=None,
-                tool_calls=[make_tool_call("web_search", {"query": "Python"})]
-            ),
-            LLMResponse(content="Hier sind die Ergebnisse.", tool_calls=None)
-        ])
+    async def test_auto_approved_tool_executes(
+        self, db, test_registry, test_permissions
+    ):
+        llm = MockLLMProvider(
+            [
+                LLMResponse(
+                    content=None,
+                    tool_calls=[make_tool_call("web_search", {"query": "Python"})],
+                ),
+                LLMResponse(content="Hier sind die Ergebnisse.", tool_calls=None),
+            ]
+        )
 
         orch = AgentOrchestrator(llm, db, test_registry, test_permissions)
 
-        with patch("agent.orchestrator.execute_tool", new_callable=AsyncMock) as mock_exec:
+        with patch(
+            "agent.orchestrator.execute_tool", new_callable=AsyncMock
+        ) as mock_exec:
             mock_exec.return_value = "3 Ergebnisse gefunden"
-            events = await collect_events(orch, "sess-auto-1", [
-                ChatMessage(role="user", content="Suche Python")
-            ])
+            events = await collect_events(
+                orch, "sess-auto-1", [ChatMessage(role="user", content="Suche Python")]
+            )
 
         # Should have: tool_result, text, done
         types = [e["type"] for e in events]
@@ -242,44 +256,56 @@ class TestOrchestratorAutoApprove:
         assert "tool_request" not in types
 
     @pytest.mark.asyncio
-    async def test_auto_approved_tool_result_has_execution_time(self, db, test_registry, test_permissions):
-        llm = MockLLMProvider([
-            LLMResponse(
-                content=None,
-                tool_calls=[make_tool_call("memory_save", {"key": "test"})]
-            ),
-            LLMResponse(content="Gespeichert.", tool_calls=None)
-        ])
+    async def test_auto_approved_tool_result_has_execution_time(
+        self, db, test_registry, test_permissions
+    ):
+        llm = MockLLMProvider(
+            [
+                LLMResponse(
+                    content=None,
+                    tool_calls=[make_tool_call("memory_save", {"key": "test"})],
+                ),
+                LLMResponse(content="Gespeichert.", tool_calls=None),
+            ]
+        )
 
         orch = AgentOrchestrator(llm, db, test_registry, test_permissions)
 
-        with patch("agent.orchestrator.execute_tool", new_callable=AsyncMock) as mock_exec:
+        with patch(
+            "agent.orchestrator.execute_tool", new_callable=AsyncMock
+        ) as mock_exec:
             mock_exec.return_value = "Memory saved"
-            events = await collect_events(orch, "sess-auto-2", [
-                ChatMessage(role="user", content="Merk dir das")
-            ])
+            events = await collect_events(
+                orch, "sess-auto-2", [ChatMessage(role="user", content="Merk dir das")]
+            )
 
         tool_result = next(e for e in events if e["type"] == "tool_result")
         assert "execution_time_ms" in tool_result
         assert isinstance(tool_result["execution_time_ms"], int)
 
     @pytest.mark.asyncio
-    async def test_auto_approved_tool_error_yields_tool_error(self, db, test_registry, test_permissions):
-        llm = MockLLMProvider([
-            LLMResponse(
-                content=None,
-                tool_calls=[make_tool_call("web_search", {"query": "fail"})]
-            ),
-            LLMResponse(content="Fehler aufgetreten.", tool_calls=None)
-        ])
+    async def test_auto_approved_tool_error_yields_tool_error(
+        self, db, test_registry, test_permissions
+    ):
+        llm = MockLLMProvider(
+            [
+                LLMResponse(
+                    content=None,
+                    tool_calls=[make_tool_call("web_search", {"query": "fail"})],
+                ),
+                LLMResponse(content="Fehler aufgetreten.", tool_calls=None),
+            ]
+        )
 
         orch = AgentOrchestrator(llm, db, test_registry, test_permissions)
 
-        with patch("agent.orchestrator.execute_tool", new_callable=AsyncMock) as mock_exec:
+        with patch(
+            "agent.orchestrator.execute_tool", new_callable=AsyncMock
+        ) as mock_exec:
             mock_exec.side_effect = Exception("Network error")
-            events = await collect_events(orch, "sess-auto-err", [
-                ChatMessage(role="user", content="Suche")
-            ])
+            events = await collect_events(
+                orch, "sess-auto-err", [ChatMessage(role="user", content="Suche")]
+            )
 
         types = [e["type"] for e in events]
         assert "tool_error" in types
@@ -291,27 +317,35 @@ class TestOrchestratorAutoApprove:
 # Approval-Required Tools
 # ============================================================
 
+
 class TestOrchestratorApprovalFlow:
     """Tests for tools that require user approval"""
 
     @pytest.mark.asyncio
     async def test_approval_flow_approved(self, db, test_registry, test_permissions):
-        llm = MockLLMProvider([
-            LLMResponse(
-                content=None,
-                tool_calls=[make_tool_call("file_read", {"path": "/tmp/test.txt"})]
-            ),
-            LLMResponse(content="Datei gelesen.", tool_calls=None)
-        ])
+        llm = MockLLMProvider(
+            [
+                LLMResponse(
+                    content=None,
+                    tool_calls=[make_tool_call("file_read", {"path": "/tmp/test.txt"})],
+                ),
+                LLMResponse(content="Datei gelesen.", tool_calls=None),
+            ]
+        )
 
         on_approval = AsyncMock(return_value=PermissionScope.ONCE)
         orch = AgentOrchestrator(llm, db, test_registry, test_permissions)
 
-        with patch("agent.orchestrator.execute_tool", new_callable=AsyncMock) as mock_exec:
+        with patch(
+            "agent.orchestrator.execute_tool", new_callable=AsyncMock
+        ) as mock_exec:
             mock_exec.return_value = "file content"
-            events = await collect_events(orch, "sess-appr-1", [
-                ChatMessage(role="user", content="Lies die Datei")
-            ], on_approval=on_approval)
+            events = await collect_events(
+                orch,
+                "sess-appr-1",
+                [ChatMessage(role="user", content="Lies die Datei")],
+                on_approval=on_approval,
+            )
 
         types = [e["type"] for e in events]
         assert "tool_request" in types
@@ -323,20 +357,25 @@ class TestOrchestratorApprovalFlow:
 
     @pytest.mark.asyncio
     async def test_approval_flow_rejected(self, db, test_registry, test_permissions):
-        llm = MockLLMProvider([
-            LLMResponse(
-                content=None,
-                tool_calls=[make_tool_call("file_read", {"path": "/etc/secret"})]
-            ),
-            LLMResponse(content="OK, abgelehnt.", tool_calls=None)
-        ])
+        llm = MockLLMProvider(
+            [
+                LLMResponse(
+                    content=None,
+                    tool_calls=[make_tool_call("file_read", {"path": "/etc/secret"})],
+                ),
+                LLMResponse(content="OK, abgelehnt.", tool_calls=None),
+            ]
+        )
 
         on_approval = AsyncMock(return_value=None)  # None = rejected
         orch = AgentOrchestrator(llm, db, test_registry, test_permissions)
 
-        events = await collect_events(orch, "sess-reject-1", [
-            ChatMessage(role="user", content="Lies die Datei")
-        ], on_approval=on_approval)
+        events = await collect_events(
+            orch,
+            "sess-reject-1",
+            [ChatMessage(role="user", content="Lies die Datei")],
+            on_approval=on_approval,
+        )
 
         types = [e["type"] for e in events]
         assert "tool_request" in types
@@ -345,72 +384,101 @@ class TestOrchestratorApprovalFlow:
         assert "tool_result" not in types
 
     @pytest.mark.asyncio
-    async def test_tool_request_has_approval_id(self, db, test_registry, test_permissions):
-        llm = MockLLMProvider([
-            LLMResponse(
-                content=None,
-                tool_calls=[make_tool_call("shell_execute", {"command": "ls"})]
-            ),
-            LLMResponse(content="Done.", tool_calls=None)
-        ])
+    async def test_tool_request_has_approval_id(
+        self, db, test_registry, test_permissions
+    ):
+        llm = MockLLMProvider(
+            [
+                LLMResponse(
+                    content=None,
+                    tool_calls=[make_tool_call("shell_execute", {"command": "ls"})],
+                ),
+                LLMResponse(content="Done.", tool_calls=None),
+            ]
+        )
 
         on_approval = AsyncMock(return_value=PermissionScope.ONCE)
         orch = AgentOrchestrator(llm, db, test_registry, test_permissions)
 
-        with patch("agent.orchestrator.execute_tool", new_callable=AsyncMock) as mock_exec:
+        with patch(
+            "agent.orchestrator.execute_tool", new_callable=AsyncMock
+        ) as mock_exec:
             mock_exec.return_value = "output"
-            events = await collect_events(orch, "sess-appr-id", [
-                ChatMessage(role="user", content="Fuehre ls aus")
-            ], on_approval=on_approval)
+            events = await collect_events(
+                orch,
+                "sess-appr-id",
+                [ChatMessage(role="user", content="Fuehre ls aus")],
+                on_approval=on_approval,
+            )
 
         tool_request = next(e for e in events if e["type"] == "tool_request")
         assert "approval_id" in tool_request
         assert len(tool_request["approval_id"]) == 8  # UUID[:8]
 
     @pytest.mark.asyncio
-    async def test_tool_request_has_risk_level(self, db, test_registry, test_permissions):
-        llm = MockLLMProvider([
-            LLMResponse(
-                content=None,
-                tool_calls=[make_tool_call("shell_execute", {"command": "date"})]
-            ),
-            LLMResponse(content="Done.", tool_calls=None)
-        ])
+    async def test_tool_request_has_risk_level(
+        self, db, test_registry, test_permissions
+    ):
+        llm = MockLLMProvider(
+            [
+                LLMResponse(
+                    content=None,
+                    tool_calls=[make_tool_call("shell_execute", {"command": "date"})],
+                ),
+                LLMResponse(content="Done.", tool_calls=None),
+            ]
+        )
 
         on_approval = AsyncMock(return_value=PermissionScope.ONCE)
         orch = AgentOrchestrator(llm, db, test_registry, test_permissions)
 
-        with patch("agent.orchestrator.execute_tool", new_callable=AsyncMock) as mock_exec:
+        with patch(
+            "agent.orchestrator.execute_tool", new_callable=AsyncMock
+        ) as mock_exec:
             mock_exec.return_value = "2026-01-01"
-            events = await collect_events(orch, "sess-risk", [
-                ChatMessage(role="user", content="Datum?")
-            ], on_approval=on_approval)
+            events = await collect_events(
+                orch,
+                "sess-risk",
+                [ChatMessage(role="user", content="Datum?")],
+                on_approval=on_approval,
+            )
 
         tool_request = next(e for e in events if e["type"] == "tool_request")
         assert tool_request["risk_level"] == "high"
 
     @pytest.mark.asyncio
-    async def test_session_permission_skips_second_approval(self, db, test_registry, test_permissions):
+    async def test_session_permission_skips_second_approval(
+        self, db, test_registry, test_permissions
+    ):
         """After granting SESSION permission, second call should not request approval"""
         # Pre-grant session permission
-        test_permissions.grant_permission("sess-perm", "file_read", {"path": "x"}, PermissionScope.SESSION)
+        test_permissions.grant_permission(
+            "sess-perm", "file_read", {"path": "x"}, PermissionScope.SESSION
+        )
 
-        llm = MockLLMProvider([
-            LLMResponse(
-                content=None,
-                tool_calls=[make_tool_call("file_read", {"path": "y"})]
-            ),
-            LLMResponse(content="OK.", tool_calls=None)
-        ])
+        llm = MockLLMProvider(
+            [
+                LLMResponse(
+                    content=None,
+                    tool_calls=[make_tool_call("file_read", {"path": "y"})],
+                ),
+                LLMResponse(content="OK.", tool_calls=None),
+            ]
+        )
 
         on_approval = AsyncMock(return_value=PermissionScope.ONCE)
         orch = AgentOrchestrator(llm, db, test_registry, test_permissions)
 
-        with patch("agent.orchestrator.execute_tool", new_callable=AsyncMock) as mock_exec:
+        with patch(
+            "agent.orchestrator.execute_tool", new_callable=AsyncMock
+        ) as mock_exec:
             mock_exec.return_value = "content"
-            events = await collect_events(orch, "sess-perm", [
-                ChatMessage(role="user", content="Lies")
-            ], on_approval=on_approval)
+            events = await collect_events(
+                orch,
+                "sess-perm",
+                [ChatMessage(role="user", content="Lies")],
+                on_approval=on_approval,
+            )
 
         types = [e["type"] for e in events]
         # Should NOT have tool_request because session permission already granted
@@ -423,23 +491,27 @@ class TestOrchestratorApprovalFlow:
 # Unknown / Blocked Tools
 # ============================================================
 
+
 class TestOrchestratorUnknownAndBlocked:
     """Tests for unknown tools and blocked tools"""
 
     @pytest.mark.asyncio
-    async def test_unknown_tool_yields_tool_error(self, db, test_registry, test_permissions):
-        llm = MockLLMProvider([
-            LLMResponse(
-                content=None,
-                tool_calls=[make_tool_call("nonexistent_tool", {})]
-            ),
-            LLMResponse(content="Hmm.", tool_calls=None)
-        ])
+    async def test_unknown_tool_yields_tool_error(
+        self, db, test_registry, test_permissions
+    ):
+        llm = MockLLMProvider(
+            [
+                LLMResponse(
+                    content=None, tool_calls=[make_tool_call("nonexistent_tool", {})]
+                ),
+                LLMResponse(content="Hmm.", tool_calls=None),
+            ]
+        )
 
         orch = AgentOrchestrator(llm, db, test_registry, test_permissions)
-        events = await collect_events(orch, "sess-unknown", [
-            ChatMessage(role="user", content="Test")
-        ])
+        events = await collect_events(
+            orch, "sess-unknown", [ChatMessage(role="user", content="Test")]
+        )
 
         types = [e["type"] for e in events]
         assert "tool_error" in types
@@ -447,22 +519,28 @@ class TestOrchestratorUnknownAndBlocked:
         assert "Unknown tool" in error_event["error"]
 
     @pytest.mark.asyncio
-    async def test_blocked_tool_yields_tool_blocked(self, db, test_registry, test_permissions):
+    async def test_blocked_tool_yields_tool_blocked(
+        self, db, test_registry, test_permissions
+    ):
         # Block file_read
-        test_permissions.grant_permission("sess-block", "file_read", {"path": "/bad"}, PermissionScope.NEVER)
+        test_permissions.grant_permission(
+            "sess-block", "file_read", {"path": "/bad"}, PermissionScope.NEVER
+        )
 
-        llm = MockLLMProvider([
-            LLMResponse(
-                content=None,
-                tool_calls=[make_tool_call("file_read", {"path": "/bad"})]
-            ),
-            LLMResponse(content="Blockiert.", tool_calls=None)
-        ])
+        llm = MockLLMProvider(
+            [
+                LLMResponse(
+                    content=None,
+                    tool_calls=[make_tool_call("file_read", {"path": "/bad"})],
+                ),
+                LLMResponse(content="Blockiert.", tool_calls=None),
+            ]
+        )
 
         orch = AgentOrchestrator(llm, db, test_registry, test_permissions)
-        events = await collect_events(orch, "sess-block", [
-            ChatMessage(role="user", content="Lies")
-        ])
+        events = await collect_events(
+            orch, "sess-block", [ChatMessage(role="user", content="Lies")]
+        )
 
         types = [e["type"] for e in events]
         assert "tool_blocked" in types
@@ -472,24 +550,31 @@ class TestOrchestratorUnknownAndBlocked:
 # Agent-Level Permissions
 # ============================================================
 
+
 class TestOrchestratorAgentPermissions:
     """Tests for per-agent tool restrictions"""
 
     @pytest.mark.asyncio
-    async def test_agent_not_allowed_tool(self, db, test_registry, test_permissions, mock_agent_locked):
+    async def test_agent_not_allowed_tool(
+        self, db, test_registry, test_permissions, mock_agent_locked
+    ):
         """Locked agent cannot use file_read"""
-        llm = MockLLMProvider([
-            LLMResponse(
-                content=None,
-                tool_calls=[make_tool_call("file_read", {"path": "/tmp/x"})]
-            ),
-            LLMResponse(content="Kein Zugang.", tool_calls=None)
-        ])
+        llm = MockLLMProvider(
+            [
+                LLMResponse(
+                    content=None,
+                    tool_calls=[make_tool_call("file_read", {"path": "/tmp/x"})],
+                ),
+                LLMResponse(content="Kein Zugang.", tool_calls=None),
+            ]
+        )
 
-        orch = AgentOrchestrator(llm, db, test_registry, test_permissions, agent=mock_agent_locked)
-        events = await collect_events(orch, "sess-locked", [
-            ChatMessage(role="user", content="Lies")
-        ])
+        orch = AgentOrchestrator(
+            llm, db, test_registry, test_permissions, agent=mock_agent_locked
+        )
+        events = await collect_events(
+            orch, "sess-locked", [ChatMessage(role="user", content="Lies")]
+        )
 
         types = [e["type"] for e in events]
         assert "tool_error" in types
@@ -498,23 +583,31 @@ class TestOrchestratorAgentPermissions:
         assert "tool_request" not in types
 
     @pytest.mark.asyncio
-    async def test_agent_auto_approved_tool(self, db, test_registry, test_permissions, mock_agent_recherche):
+    async def test_agent_auto_approved_tool(
+        self, db, test_registry, test_permissions, mock_agent_recherche
+    ):
         """Recherche agent has web_search auto-approved"""
-        llm = MockLLMProvider([
-            LLMResponse(
-                content=None,
-                tool_calls=[make_tool_call("web_search", {"query": "test"})]
-            ),
-            LLMResponse(content="Ergebnisse.", tool_calls=None)
-        ])
+        llm = MockLLMProvider(
+            [
+                LLMResponse(
+                    content=None,
+                    tool_calls=[make_tool_call("web_search", {"query": "test"})],
+                ),
+                LLMResponse(content="Ergebnisse.", tool_calls=None),
+            ]
+        )
 
-        orch = AgentOrchestrator(llm, db, test_registry, test_permissions, agent=mock_agent_recherche)
+        orch = AgentOrchestrator(
+            llm, db, test_registry, test_permissions, agent=mock_agent_recherche
+        )
 
-        with patch("agent.orchestrator.execute_tool", new_callable=AsyncMock) as mock_exec:
+        with patch(
+            "agent.orchestrator.execute_tool", new_callable=AsyncMock
+        ) as mock_exec:
             mock_exec.return_value = "search results"
-            events = await collect_events(orch, "sess-rech-auto", [
-                ChatMessage(role="user", content="Suche")
-            ])
+            events = await collect_events(
+                orch, "sess-rech-auto", [ChatMessage(role="user", content="Suche")]
+            )
 
         types = [e["type"] for e in events]
         # Auto-approved → no tool_request
@@ -522,24 +615,35 @@ class TestOrchestratorAgentPermissions:
         assert "tool_result" in types
 
     @pytest.mark.asyncio
-    async def test_default_agent_allows_all(self, db, test_registry, test_permissions, mock_agent_default):
+    async def test_default_agent_allows_all(
+        self, db, test_registry, test_permissions, mock_agent_default
+    ):
         """Default agent with allowed_tools=None allows all tools"""
-        llm = MockLLMProvider([
-            LLMResponse(
-                content=None,
-                tool_calls=[make_tool_call("shell_execute", {"command": "ls"})]
-            ),
-            LLMResponse(content="Output.", tool_calls=None)
-        ])
+        llm = MockLLMProvider(
+            [
+                LLMResponse(
+                    content=None,
+                    tool_calls=[make_tool_call("shell_execute", {"command": "ls"})],
+                ),
+                LLMResponse(content="Output.", tool_calls=None),
+            ]
+        )
 
         on_approval = AsyncMock(return_value=PermissionScope.ONCE)
-        orch = AgentOrchestrator(llm, db, test_registry, test_permissions, agent=mock_agent_default)
+        orch = AgentOrchestrator(
+            llm, db, test_registry, test_permissions, agent=mock_agent_default
+        )
 
-        with patch("agent.orchestrator.execute_tool", new_callable=AsyncMock) as mock_exec:
+        with patch(
+            "agent.orchestrator.execute_tool", new_callable=AsyncMock
+        ) as mock_exec:
             mock_exec.return_value = "files"
-            events = await collect_events(orch, "sess-default", [
-                ChatMessage(role="user", content="ls")
-            ], on_approval=on_approval)
+            events = await collect_events(
+                orch,
+                "sess-default",
+                [ChatMessage(role="user", content="ls")],
+                on_approval=on_approval,
+            )
 
         types = [e["type"] for e in events]
         # Should be allowed (needs approval though since shell_execute requires it)
@@ -549,22 +653,29 @@ class TestOrchestratorAgentPermissions:
     @pytest.mark.asyncio
     async def test_no_agent_allows_all(self, db, test_registry, test_permissions):
         """Without an agent, all tools are allowed"""
-        llm = MockLLMProvider([
-            LLMResponse(
-                content=None,
-                tool_calls=[make_tool_call("shell_execute", {"command": "ls"})]
-            ),
-            LLMResponse(content="OK.", tool_calls=None)
-        ])
+        llm = MockLLMProvider(
+            [
+                LLMResponse(
+                    content=None,
+                    tool_calls=[make_tool_call("shell_execute", {"command": "ls"})],
+                ),
+                LLMResponse(content="OK.", tool_calls=None),
+            ]
+        )
 
         on_approval = AsyncMock(return_value=PermissionScope.ONCE)
         orch = AgentOrchestrator(llm, db, test_registry, test_permissions, agent=None)
 
-        with patch("agent.orchestrator.execute_tool", new_callable=AsyncMock) as mock_exec:
+        with patch(
+            "agent.orchestrator.execute_tool", new_callable=AsyncMock
+        ) as mock_exec:
             mock_exec.return_value = "output"
-            events = await collect_events(orch, "sess-no-agent", [
-                ChatMessage(role="user", content="ls")
-            ], on_approval=on_approval)
+            events = await collect_events(
+                orch,
+                "sess-no-agent",
+                [ChatMessage(role="user", content="ls")],
+                on_approval=on_approval,
+            )
 
         types = [e["type"] for e in events]
         assert "tool_result" in types
@@ -573,6 +684,7 @@ class TestOrchestratorAgentPermissions:
 # ============================================================
 # Max Iterations & Multiple Tool Calls
 # ============================================================
+
 
 class TestOrchestratorIterations:
     """Tests for iteration limits and multi-tool scenarios"""
@@ -584,18 +696,22 @@ class TestOrchestratorIterations:
         responses = [
             LLMResponse(
                 content=None,
-                tool_calls=[make_tool_call("web_search", {"query": f"iter-{i}"})]
+                tool_calls=[make_tool_call("web_search", {"query": f"iter-{i}"})],
             )
             for i in range(15)
         ]
         llm = MockLLMProvider(responses)
         orch = AgentOrchestrator(llm, db, test_registry, test_permissions)
 
-        with patch("agent.orchestrator.execute_tool", new_callable=AsyncMock) as mock_exec:
+        with patch(
+            "agent.orchestrator.execute_tool", new_callable=AsyncMock
+        ) as mock_exec:
             mock_exec.return_value = "result"
-            events = await collect_events(orch, "sess-maxiter", [
-                ChatMessage(role="user", content="Endlosschleife")
-            ])
+            events = await collect_events(
+                orch,
+                "sess-maxiter",
+                [ChatMessage(role="user", content="Endlosschleife")],
+            )
 
         types = [e["type"] for e in events]
         assert "warning" in types
@@ -609,21 +725,23 @@ class TestOrchestratorIterations:
         responses = [
             LLMResponse(
                 content=None,
-                tool_calls=[make_tool_call("web_search", {"query": f"iter-{i}"})]
+                tool_calls=[make_tool_call("web_search", {"query": f"iter-{i}"})],
             )
             for i in range(10)
         ]
         llm = MockLLMProvider(responses)
         orch = AgentOrchestrator(llm, db, test_registry, test_permissions)
 
-        with patch("agent.orchestrator.execute_tool", new_callable=AsyncMock) as mock_exec:
+        with patch(
+            "agent.orchestrator.execute_tool", new_callable=AsyncMock
+        ) as mock_exec:
             mock_exec.return_value = "ok"
             events = []
             async for event in orch.process_message(
                 session_id="sess-custom-iter",
                 messages=[ChatMessage(role="user", content="Loop")],
                 on_approval_needed=AsyncMock(return_value=PermissionScope.ONCE),
-                max_tool_iterations=3
+                max_tool_iterations=3,
             ):
                 events.append(event)
 
@@ -632,48 +750,60 @@ class TestOrchestratorIterations:
         assert len(tool_results) == 3
 
     @pytest.mark.asyncio
-    async def test_multiple_tool_calls_in_one_response(self, db, test_registry, test_permissions):
+    async def test_multiple_tool_calls_in_one_response(
+        self, db, test_registry, test_permissions
+    ):
         """LLM returns multiple tool calls in a single response"""
-        llm = MockLLMProvider([
-            LLMResponse(
-                content="Ich suche und lese...",
-                tool_calls=[
-                    make_tool_call("web_search", {"query": "Python"}),
-                    make_tool_call("memory_save", {"key": "search_done"}),
-                ]
-            ),
-            LLMResponse(content="Fertig!", tool_calls=None)
-        ])
+        llm = MockLLMProvider(
+            [
+                LLMResponse(
+                    content="Ich suche und lese...",
+                    tool_calls=[
+                        make_tool_call("web_search", {"query": "Python"}),
+                        make_tool_call("memory_save", {"key": "search_done"}),
+                    ],
+                ),
+                LLMResponse(content="Fertig!", tool_calls=None),
+            ]
+        )
 
         orch = AgentOrchestrator(llm, db, test_registry, test_permissions)
 
-        with patch("agent.orchestrator.execute_tool", new_callable=AsyncMock) as mock_exec:
+        with patch(
+            "agent.orchestrator.execute_tool", new_callable=AsyncMock
+        ) as mock_exec:
             mock_exec.return_value = "ok"
-            events = await collect_events(orch, "sess-multi", [
-                ChatMessage(role="user", content="Such und merk")
-            ])
+            events = await collect_events(
+                orch, "sess-multi", [ChatMessage(role="user", content="Such und merk")]
+            )
 
         tool_results = [e for e in events if e["type"] == "tool_result"]
         assert len(tool_results) == 2
 
     @pytest.mark.asyncio
-    async def test_partial_text_with_tool_calls(self, db, test_registry, test_permissions):
+    async def test_partial_text_with_tool_calls(
+        self, db, test_registry, test_permissions
+    ):
         """LLM response has both content and tool_calls — text is yielded after tools"""
-        llm = MockLLMProvider([
-            LLMResponse(
-                content="Ich suche jetzt...",
-                tool_calls=[make_tool_call("web_search", {"query": "test"})]
-            ),
-            LLMResponse(content="Erledigt.", tool_calls=None)
-        ])
+        llm = MockLLMProvider(
+            [
+                LLMResponse(
+                    content="Ich suche jetzt...",
+                    tool_calls=[make_tool_call("web_search", {"query": "test"})],
+                ),
+                LLMResponse(content="Erledigt.", tool_calls=None),
+            ]
+        )
 
         orch = AgentOrchestrator(llm, db, test_registry, test_permissions)
 
-        with patch("agent.orchestrator.execute_tool", new_callable=AsyncMock) as mock_exec:
+        with patch(
+            "agent.orchestrator.execute_tool", new_callable=AsyncMock
+        ) as mock_exec:
             mock_exec.return_value = "found"
-            events = await collect_events(orch, "sess-partial", [
-                ChatMessage(role="user", content="Suche")
-            ])
+            events = await collect_events(
+                orch, "sess-partial", [ChatMessage(role="user", content="Suche")]
+            )
 
         [e["type"] for e in events]
         # Partial text should be yielded
@@ -685,6 +815,7 @@ class TestOrchestratorIterations:
 # Tool Execution Errors
 # ============================================================
 
+
 class TestOrchestratorToolErrors:
     """Tests for error handling during tool execution"""
 
@@ -693,22 +824,29 @@ class TestOrchestratorToolErrors:
         """ToolExecutionError is caught and yields tool_error"""
         from agent.tool_handlers import ToolExecutionError
 
-        llm = MockLLMProvider([
-            LLMResponse(
-                content=None,
-                tool_calls=[make_tool_call("file_read", {"path": "/forbidden"})]
-            ),
-            LLMResponse(content="Fehler.", tool_calls=None)
-        ])
+        llm = MockLLMProvider(
+            [
+                LLMResponse(
+                    content=None,
+                    tool_calls=[make_tool_call("file_read", {"path": "/forbidden"})],
+                ),
+                LLMResponse(content="Fehler.", tool_calls=None),
+            ]
+        )
 
         on_approval = AsyncMock(return_value=PermissionScope.ONCE)
         orch = AgentOrchestrator(llm, db, test_registry, test_permissions)
 
-        with patch("agent.orchestrator.execute_tool", new_callable=AsyncMock) as mock_exec:
+        with patch(
+            "agent.orchestrator.execute_tool", new_callable=AsyncMock
+        ) as mock_exec:
             mock_exec.side_effect = ToolExecutionError("Access denied")
-            events = await collect_events(orch, "sess-err-1", [
-                ChatMessage(role="user", content="Lies")
-            ], on_approval=on_approval)
+            events = await collect_events(
+                orch,
+                "sess-err-1",
+                [ChatMessage(role="user", content="Lies")],
+                on_approval=on_approval,
+            )
 
         types = [e["type"] for e in events]
         assert "tool_error" in types
@@ -718,22 +856,29 @@ class TestOrchestratorToolErrors:
     @pytest.mark.asyncio
     async def test_unexpected_error(self, db, test_registry, test_permissions):
         """Unexpected exceptions are caught and yield tool_error"""
-        llm = MockLLMProvider([
-            LLMResponse(
-                content=None,
-                tool_calls=[make_tool_call("file_read", {"path": "/crash"})]
-            ),
-            LLMResponse(content="Crash.", tool_calls=None)
-        ])
+        llm = MockLLMProvider(
+            [
+                LLMResponse(
+                    content=None,
+                    tool_calls=[make_tool_call("file_read", {"path": "/crash"})],
+                ),
+                LLMResponse(content="Crash.", tool_calls=None),
+            ]
+        )
 
         on_approval = AsyncMock(return_value=PermissionScope.ONCE)
         orch = AgentOrchestrator(llm, db, test_registry, test_permissions)
 
-        with patch("agent.orchestrator.execute_tool", new_callable=AsyncMock) as mock_exec:
+        with patch(
+            "agent.orchestrator.execute_tool", new_callable=AsyncMock
+        ) as mock_exec:
             mock_exec.side_effect = RuntimeError("Unexpected crash")
-            events = await collect_events(orch, "sess-err-2", [
-                ChatMessage(role="user", content="Crash")
-            ], on_approval=on_approval)
+            events = await collect_events(
+                orch,
+                "sess-err-2",
+                [ChatMessage(role="user", content="Crash")],
+                on_approval=on_approval,
+            )
 
         types = [e["type"] for e in events]
         assert "tool_error" in types
@@ -745,74 +890,94 @@ class TestOrchestratorToolErrors:
 # Audit Logging
 # ============================================================
 
+
 class TestOrchestratorAuditLogging:
     """Tests that the orchestrator logs events to audit trail"""
 
     @pytest.mark.asyncio
     async def test_tool_request_logged(self, db, test_registry, test_permissions):
-        llm = MockLLMProvider([
-            LLMResponse(
-                content=None,
-                tool_calls=[make_tool_call("web_search", {"query": "audit test"})]
-            ),
-            LLMResponse(content="OK.", tool_calls=None)
-        ])
+        llm = MockLLMProvider(
+            [
+                LLMResponse(
+                    content=None,
+                    tool_calls=[make_tool_call("web_search", {"query": "audit test"})],
+                ),
+                LLMResponse(content="OK.", tool_calls=None),
+            ]
+        )
 
         orch = AgentOrchestrator(llm, db, test_registry, test_permissions)
 
-        with patch("agent.orchestrator.execute_tool", new_callable=AsyncMock) as mock_exec:
+        with patch(
+            "agent.orchestrator.execute_tool", new_callable=AsyncMock
+        ) as mock_exec:
             mock_exec.return_value = "result"
-            with patch.object(orch.audit, "log_tool_request", new_callable=AsyncMock) as mock_log:
+            with patch.object(
+                orch.audit, "log_tool_request", new_callable=AsyncMock
+            ) as mock_log:
                 mock_log.return_value = MagicMock()
-                await collect_events(orch, "sess-audit-1", [
-                    ChatMessage(role="user", content="Test")
-                ])
+                await collect_events(
+                    orch, "sess-audit-1", [ChatMessage(role="user", content="Test")]
+                )
                 mock_log.assert_called_once_with(
                     "sess-audit-1", "web_search", {"query": "audit test"}
                 )
 
     @pytest.mark.asyncio
     async def test_tool_execution_logged(self, db, test_registry, test_permissions):
-        llm = MockLLMProvider([
-            LLMResponse(
-                content=None,
-                tool_calls=[make_tool_call("web_search", {"query": "log test"})]
-            ),
-            LLMResponse(content="OK.", tool_calls=None)
-        ])
+        llm = MockLLMProvider(
+            [
+                LLMResponse(
+                    content=None,
+                    tool_calls=[make_tool_call("web_search", {"query": "log test"})],
+                ),
+                LLMResponse(content="OK.", tool_calls=None),
+            ]
+        )
 
         orch = AgentOrchestrator(llm, db, test_registry, test_permissions)
 
-        with patch("agent.orchestrator.execute_tool", new_callable=AsyncMock) as mock_exec:
+        with patch(
+            "agent.orchestrator.execute_tool", new_callable=AsyncMock
+        ) as mock_exec:
             mock_exec.return_value = "logged result"
-            with patch.object(orch.audit, "log_tool_execution", new_callable=AsyncMock) as mock_log:
+            with patch.object(
+                orch.audit, "log_tool_execution", new_callable=AsyncMock
+            ) as mock_log:
                 mock_log.return_value = MagicMock()
-                await collect_events(orch, "sess-audit-2", [
-                    ChatMessage(role="user", content="Test")
-                ])
+                await collect_events(
+                    orch, "sess-audit-2", [ChatMessage(role="user", content="Test")]
+                )
                 mock_log.assert_called_once()
                 call_args = mock_log.call_args[0]
                 assert call_args[0] == "sess-audit-2"  # session_id
-                assert call_args[1] == "web_search"      # tool_name
+                assert call_args[1] == "web_search"  # tool_name
 
     @pytest.mark.asyncio
     async def test_rejection_logged(self, db, test_registry, test_permissions):
-        llm = MockLLMProvider([
-            LLMResponse(
-                content=None,
-                tool_calls=[make_tool_call("file_read", {"path": "/x"})]
-            ),
-            LLMResponse(content="Abgelehnt.", tool_calls=None)
-        ])
+        llm = MockLLMProvider(
+            [
+                LLMResponse(
+                    content=None,
+                    tool_calls=[make_tool_call("file_read", {"path": "/x"})],
+                ),
+                LLMResponse(content="Abgelehnt.", tool_calls=None),
+            ]
+        )
 
         on_approval = AsyncMock(return_value=None)
         orch = AgentOrchestrator(llm, db, test_registry, test_permissions)
 
-        with patch.object(orch.audit, "log_tool_rejection", new_callable=AsyncMock) as mock_log:
+        with patch.object(
+            orch.audit, "log_tool_rejection", new_callable=AsyncMock
+        ) as mock_log:
             mock_log.return_value = MagicMock()
-            await collect_events(orch, "sess-audit-rej", [
-                ChatMessage(role="user", content="Lies")
-            ], on_approval=on_approval)
+            await collect_events(
+                orch,
+                "sess-audit-rej",
+                [ChatMessage(role="user", content="Lies")],
+                on_approval=on_approval,
+            )
             mock_log.assert_called_once()
             call_args = mock_log.call_args[0]
             assert call_args[1] == "file_read"
@@ -822,24 +987,33 @@ class TestOrchestratorAuditLogging:
     async def test_failure_logged(self, db, test_registry, test_permissions):
         from agent.tool_handlers import ToolExecutionError
 
-        llm = MockLLMProvider([
-            LLMResponse(
-                content=None,
-                tool_calls=[make_tool_call("file_read", {"path": "/fail"})]
-            ),
-            LLMResponse(content="Fehler.", tool_calls=None)
-        ])
+        llm = MockLLMProvider(
+            [
+                LLMResponse(
+                    content=None,
+                    tool_calls=[make_tool_call("file_read", {"path": "/fail"})],
+                ),
+                LLMResponse(content="Fehler.", tool_calls=None),
+            ]
+        )
 
         on_approval = AsyncMock(return_value=PermissionScope.ONCE)
         orch = AgentOrchestrator(llm, db, test_registry, test_permissions)
 
-        with patch("agent.orchestrator.execute_tool", new_callable=AsyncMock) as mock_exec:
+        with patch(
+            "agent.orchestrator.execute_tool", new_callable=AsyncMock
+        ) as mock_exec:
             mock_exec.side_effect = ToolExecutionError("Disk error")
-            with patch.object(orch.audit, "log_tool_failure", new_callable=AsyncMock) as mock_log:
+            with patch.object(
+                orch.audit, "log_tool_failure", new_callable=AsyncMock
+            ) as mock_log:
                 mock_log.return_value = MagicMock()
-                await collect_events(orch, "sess-audit-fail", [
-                    ChatMessage(role="user", content="Lies")
-                ], on_approval=on_approval)
+                await collect_events(
+                    orch,
+                    "sess-audit-fail",
+                    [ChatMessage(role="user", content="Lies")],
+                    on_approval=on_approval,
+                )
                 mock_log.assert_called_once()
                 call_args = mock_log.call_args[0]
                 assert "Disk error" in call_args[3]

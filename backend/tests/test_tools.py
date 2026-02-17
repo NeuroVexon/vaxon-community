@@ -63,9 +63,7 @@ class TestPermissionManager:
         manager = PermissionManager()
 
         has_perm = manager.check_permission(
-            "session-1",
-            "file_read",
-            {"path": "/test.txt"}
+            "session-1", "file_read", {"path": "/test.txt"}
         )
 
         assert has_perm is False
@@ -74,25 +72,18 @@ class TestPermissionManager:
         manager = PermissionManager()
 
         manager.grant_permission(
-            "session-1",
-            "file_read",
-            {"path": "/test.txt"},
-            PermissionScope.ONCE
+            "session-1", "file_read", {"path": "/test.txt"}, PermissionScope.ONCE
         )
 
         # Should have permission for exact params
         has_perm = manager.check_permission(
-            "session-1",
-            "file_read",
-            {"path": "/test.txt"}
+            "session-1", "file_read", {"path": "/test.txt"}
         )
         assert has_perm is True
 
         # Should NOT have permission for different params
         has_perm_other = manager.check_permission(
-            "session-1",
-            "file_read",
-            {"path": "/other.txt"}
+            "session-1", "file_read", {"path": "/other.txt"}
         )
         assert has_perm_other is False
 
@@ -100,17 +91,12 @@ class TestPermissionManager:
         manager = PermissionManager()
 
         manager.grant_permission(
-            "session-1",
-            "file_read",
-            {"path": "/test.txt"},
-            PermissionScope.SESSION
+            "session-1", "file_read", {"path": "/test.txt"}, PermissionScope.SESSION
         )
 
         # Should have permission for any params
         has_perm = manager.check_permission(
-            "session-1",
-            "file_read",
-            {"path": "/other.txt"}
+            "session-1", "file_read", {"path": "/other.txt"}
         )
         assert has_perm is True
 
@@ -118,10 +104,7 @@ class TestPermissionManager:
         manager = PermissionManager()
 
         manager.grant_permission(
-            "session-1",
-            "file_read",
-            {"path": "/test.txt"},
-            PermissionScope.NEVER
+            "session-1", "file_read", {"path": "/test.txt"}, PermissionScope.NEVER
         )
 
         is_blocked = manager.is_blocked("file_read", {"path": "/test.txt"})
@@ -131,10 +114,7 @@ class TestPermissionManager:
         manager = PermissionManager()
 
         manager.grant_permission(
-            "session-1",
-            "file_read",
-            {"path": "/test.txt"},
-            PermissionScope.SESSION
+            "session-1", "file_read", {"path": "/test.txt"}, PermissionScope.SESSION
         )
 
         # Verify permission exists

@@ -61,10 +61,7 @@ class ChatResponse(BaseModel):
 
 
 @router.post("/send")
-async def send_message(
-    request: ChatRequest,
-    db: AsyncSession = Depends(get_db)
-):
+async def send_message(request: ChatRequest, db: AsyncSession = Depends(get_db)):
     """Send a message and get a response (non-streaming)"""
     # Load settings and update router
     db_settings = await load_settings_to_router(db)
@@ -76,17 +73,13 @@ async def send_message(
         if not conversation:
             raise HTTPException(status_code=404, detail="Conversation not found")
     else:
-        conversation = Conversation(
-            system_prompt=request.system_prompt
-        )
+        conversation = Conversation(system_prompt=request.system_prompt)
         db.add(conversation)
         await db.flush()
 
     # Save user message
     user_message = Message(
-        conversation_id=conversation.id,
-        role="user",
-        content=request.message
+        conversation_id=conversation.id, role="user", content=request.message
     )
     db.add(user_message)
     await db.flush()
@@ -111,14 +104,16 @@ async def send_message(
     try:
         provider = llm_router.get_provider(LLMProvider(current_provider))
     except ValueError:
-        raise HTTPException(status_code=400, detail=f"Invalid LLM provider: {current_provider}")
+        raise HTTPException(
+            status_code=400, detail=f"Invalid LLM provider: {current_provider}"
+        )
     response = await provider.chat(messages)
 
     # Save assistant message
     assistant_message = Message(
         conversation_id=conversation.id,
         role="assistant",
-        content=response.content or ""
+        content=response.content or "",
     )
     db.add(assistant_message)
     await db.commit()
@@ -126,15 +121,16 @@ async def send_message(
     return ChatResponse(
         session_id=conversation.id,
         message=response.content or "",
-        tool_calls=[tc.model_dump() for tc in response.tool_calls] if response.tool_calls else None
+        tool_calls=(
+            [tc.model_dump() for tc in response.tool_calls]
+            if response.tool_calls
+            else None
+        ),
     )
 
 
 @router.post("/stream")
-async def stream_message(
-    request: ChatRequest,
-    db: AsyncSession = Depends(get_db)
-):
+async def stream_message(request: ChatRequest, db: AsyncSession = Depends(get_db)):
     """Send a message and stream the response"""
     # Load settings and update router
     db_settings = await load_settings_to_router(db)
@@ -146,17 +142,13 @@ async def stream_message(
         if not conversation:
             raise HTTPException(status_code=404, detail="Conversation not found")
     else:
-        conversation = Conversation(
-            system_prompt=request.system_prompt
-        )
+        conversation = Conversation(system_prompt=request.system_prompt)
         db.add(conversation)
         await db.flush()
 
     # Save user message
     user_message = Message(
-        conversation_id=conversation.id,
-        role="user",
-        content=request.message
+        conversation_id=conversation.id, role="user", content=request.message
     )
     db.add(user_message)
     await db.commit()
@@ -196,9 +188,7 @@ async def stream_message(
 
         # Save complete response
         assistant_message = Message(
-            conversation_id=conversation.id,
-            role="assistant",
-            content=full_response
+            conversation_id=conversation.id, role="assistant", content=full_response
         )
         db.add(assistant_message)
         await db.commit()
@@ -208,18 +198,13 @@ async def stream_message(
     return StreamingResponse(
         generate(),
         media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive"
-        }
+        headers={"Cache-Control": "no-cache", "Connection": "keep-alive"},
     )
 
 
 @router.post("/agent")
 async def agent_message(
-    request: ChatRequest,
-    raw_request: Request,
-    db: AsyncSession = Depends(get_db)
+    request: ChatRequest, raw_request: Request, db: AsyncSession = Depends(get_db)
 ):
     """
     Send a message through the Agent Orchestrator (SSE stream).
@@ -241,21 +226,19 @@ async def agent_message(
         if not conversation:
             raise HTTPException(status_code=404, detail="Conversation not found")
     else:
-        conversation = Conversation(
-            system_prompt=request.system_prompt
-        )
+        conversation = Conversation(system_prompt=request.system_prompt)
         db.add(conversation)
         await db.flush()
 
     # Auto-title from first message
     if not conversation.title:
-        conversation.title = request.message[:40] + ("..." if len(request.message) > 40 else "")
+        conversation.title = request.message[:40] + (
+            "..." if len(request.message) > 40 else ""
+        )
 
     # Save user message
     user_message = Message(
-        conversation_id=conversation.id,
-        role="user",
-        content=request.message
+        conversation_id=conversation.id, role="user", content=request.message
     )
     db.add(user_message)
     await db.commit()
@@ -300,17 +283,19 @@ async def agent_message(
     docs = doc_result.scalars().all()
     if docs:
         from agent.document_handler import format_for_context
+
         doc_contexts = []
         for doc in docs:
             if doc.extracted_text:
-                doc_contexts.append(format_for_context(doc.filename, doc.extracted_text))
+                doc_contexts.append(
+                    format_for_context(doc.filename, doc.extracted_text)
+                )
         if doc_contexts:
-            intro_parts.append(t("chat.docs_uploaded") + "\n" + "\n\n".join(doc_contexts))
+            intro_parts.append(
+                t("chat.docs_uploaded") + "\n" + "\n\n".join(doc_contexts)
+            )
 
-    messages.append(ChatMessage(
-        role="assistant",
-        content=" ".join(intro_parts)
-    ))
+    messages.append(ChatMessage(role="assistant", content=" ".join(intro_parts)))
 
     history_result = await db.execute(
         select(Message)
@@ -371,9 +356,7 @@ async def agent_message(
                 stream_agent = await stream_db.get(Agent, agent_data.id)
 
             orchestrator = AgentOrchestrator(
-                llm_provider=provider,
-                db_session=stream_db,
-                agent=stream_agent
+                llm_provider=provider, db_session=stream_db, agent=stream_agent
             )
 
             full_response = ""
@@ -382,7 +365,7 @@ async def agent_message(
                 async for event in orchestrator.process_message(
                     session_id=session_id,
                     messages=messages,
-                    on_approval_needed=on_approval_needed
+                    on_approval_needed=on_approval_needed,
                 ):
                     event_type = event.get("type")
 
@@ -400,9 +383,7 @@ async def agent_message(
             # Save assistant response with the stream session
             if full_response:
                 assistant_message = Message(
-                    conversation_id=session_id,
-                    role="assistant",
-                    content=full_response
+                    conversation_id=session_id, role="assistant", content=full_response
                 )
                 stream_db.add(assistant_message)
                 await stream_db.commit()
@@ -412,10 +393,7 @@ async def agent_message(
     return StreamingResponse(
         generate(),
         media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive"
-        }
+        headers={"Cache-Control": "no-cache", "Connection": "keep-alive"},
     )
 
 
@@ -430,13 +408,12 @@ def resolve_approval(approval_id: str, decision: str) -> bool:
 
 
 @router.post("/approve/{approval_id}")
-async def approve_agent_tool(
-    approval_id: str,
-    decision: str = "once"
-):
+async def approve_agent_tool(approval_id: str, decision: str = "once"):
     """Approve or reject a pending tool request from the agent stream"""
     if decision not in ("once", "session", "never"):
-        raise HTTPException(status_code=400, detail="Decision must be: once, session, never")
+        raise HTTPException(
+            status_code=400, detail="Decision must be: once, session, never"
+        )
 
     if not resolve_approval(approval_id, decision):
         raise HTTPException(status_code=404, detail="Approval not found or expired")
@@ -445,15 +422,10 @@ async def approve_agent_tool(
 
 
 @router.get("/conversations")
-async def list_conversations(
-    limit: int = 50,
-    db: AsyncSession = Depends(get_db)
-):
+async def list_conversations(limit: int = 50, db: AsyncSession = Depends(get_db)):
     """List recent conversations"""
     result = await db.execute(
-        select(Conversation)
-        .order_by(Conversation.updated_at.desc())
-        .limit(limit)
+        select(Conversation).order_by(Conversation.updated_at.desc()).limit(limit)
     )
     conversations = result.scalars().all()
     return [
@@ -461,17 +433,14 @@ async def list_conversations(
             "id": c.id,
             "title": c.title,
             "created_at": c.created_at.isoformat(),
-            "updated_at": c.updated_at.isoformat()
+            "updated_at": c.updated_at.isoformat(),
         }
         for c in conversations
     ]
 
 
 @router.get("/conversations/{conversation_id}")
-async def get_conversation(
-    conversation_id: str,
-    db: AsyncSession = Depends(get_db)
-):
+async def get_conversation(conversation_id: str, db: AsyncSession = Depends(get_db)):
     """Get a conversation with messages"""
     from sqlalchemy.orm import selectinload
 
@@ -495,18 +464,15 @@ async def get_conversation(
                 "id": m.id,
                 "role": m.role,
                 "content": m.content,
-                "created_at": m.created_at.isoformat()
+                "created_at": m.created_at.isoformat(),
             }
             for m in sorted(conversation.messages, key=lambda x: x.created_at)
-        ]
+        ],
     }
 
 
 @router.delete("/conversations/{conversation_id}")
-async def delete_conversation(
-    conversation_id: str,
-    db: AsyncSession = Depends(get_db)
-):
+async def delete_conversation(conversation_id: str, db: AsyncSession = Depends(get_db)):
     """Delete a conversation"""
     conversation = await db.get(Conversation, conversation_id)
     if not conversation:

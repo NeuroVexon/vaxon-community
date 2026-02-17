@@ -38,7 +38,7 @@ class AgentOrchestrator:
         db_session: AsyncSession,
         tools: Optional[ToolRegistry] = None,
         permissions: Optional[PermissionManager] = None,
-        agent: Optional[Agent] = None
+        agent: Optional[Agent] = None,
     ):
         self.llm = llm_provider
         self.tools = tools or tool_registry
@@ -51,7 +51,7 @@ class AgentOrchestrator:
         session_id: str,
         messages: list[ChatMessage],
         on_approval_needed: Callable[[dict], Awaitable[Optional[PermissionScope]]],
-        max_tool_iterations: int = 10
+        max_tool_iterations: int = 10,
     ) -> AsyncGenerator[dict, None]:
         """
         Process a message with tool support.
@@ -74,8 +74,7 @@ class AgentOrchestrator:
 
             # Call LLM with tools
             response = await self.llm.chat(
-                messages=messages,
-                tools=self.tools.get_tools_for_llm()
+                messages=messages, tools=self.tools.get_tools_for_llm()
             )
 
             # If no tool calls, we're done
@@ -96,28 +95,36 @@ class AgentOrchestrator:
                     yield {
                         "type": "tool_error",
                         "tool": tool_name,
-                        "error": f"Unknown tool: {tool_name}"
+                        "error": f"Unknown tool: {tool_name}",
                     }
                     continue
 
                 # Agent-level permission check: is this tool allowed for this agent?
-                if self.agent and not AgentManager.is_tool_allowed(self.agent, tool_name):
-                    logger.info(f"Agent '{self.agent.name}' darf {tool_name} nicht nutzen")
+                if self.agent and not AgentManager.is_tool_allowed(
+                    self.agent, tool_name
+                ):
+                    logger.info(
+                        f"Agent '{self.agent.name}' darf {tool_name} nicht nutzen"
+                    )
                     yield {
                         "type": "tool_error",
                         "tool": tool_name,
-                        "error": t("orch.agent_no_access", agent=self.agent.name, tool=tool_name)
+                        "error": t(
+                            "orch.agent_no_access",
+                            agent=self.agent.name,
+                            tool=tool_name,
+                        ),
                     }
-                    messages.append(ChatMessage(
-                        role="assistant",
-                        content=t("orch.tool_not_allowed", tool=tool_name)
-                    ))
+                    messages.append(
+                        ChatMessage(
+                            role="assistant",
+                            content=t("orch.tool_not_allowed", tool=tool_name),
+                        )
+                    )
                     continue
 
                 # Log the request
-                await self.audit.log_tool_request(
-                    session_id, tool_name, tool_params
-                )
+                await self.audit.log_tool_request(session_id, tool_name, tool_params)
 
                 # Check auto-approve: agent-level OR tool-level
                 agent_auto_approved = (
@@ -130,40 +137,45 @@ class AgentOrchestrator:
                     # Skip approval flow, go straight to execution
                     start_time = time.time()
                     try:
-                        result = await execute_tool(tool_name, tool_params, db_session=self.audit.db)
+                        result = await execute_tool(
+                            tool_name, tool_params, db_session=self.audit.db
+                        )
                         execution_time_ms = int((time.time() - start_time) * 1000)
 
                         await self.audit.log_tool_execution(
-                            session_id, tool_name, tool_params,
-                            str(result), execution_time_ms
+                            session_id,
+                            tool_name,
+                            tool_params,
+                            str(result),
+                            execution_time_ms,
                         )
 
                         yield {
                             "type": "tool_result",
                             "tool": tool_name,
                             "result": result,
-                            "execution_time_ms": execution_time_ms
+                            "execution_time_ms": execution_time_ms,
                         }
 
-                        messages.append(ChatMessage(
-                            role="assistant",
-                            content=f"Tool {tool_name} executed. Result: {str(result)[:500]}"
-                        ))
+                        messages.append(
+                            ChatMessage(
+                                role="assistant",
+                                content=f"Tool {tool_name} executed. Result: {str(result)[:500]}",
+                            )
+                        )
 
                     except Exception as e:
                         logger.exception(f"Error executing auto-approved {tool_name}")
                         await self.audit.log_tool_failure(
                             session_id, tool_name, tool_params, str(e)
                         )
-                        yield {
-                            "type": "tool_error",
-                            "tool": tool_name,
-                            "error": str(e)
-                        }
-                        messages.append(ChatMessage(
-                            role="assistant",
-                            content=f"Tool {tool_name} failed: {str(e)}"
-                        ))
+                        yield {"type": "tool_error", "tool": tool_name, "error": str(e)}
+                        messages.append(
+                            ChatMessage(
+                                role="assistant",
+                                content=f"Tool {tool_name} failed: {str(e)}",
+                            )
+                        )
                     continue
 
                 # Check existing permission
@@ -180,12 +192,14 @@ class AgentOrchestrator:
                         yield {
                             "type": "tool_blocked",
                             "tool": tool_name,
-                            "message": t("orch.tool_blocked")
+                            "message": t("orch.tool_blocked"),
                         }
-                        messages.append(ChatMessage(
-                            role="assistant",
-                            content=t("orch.tool_blocked_msg", tool=tool_name)
-                        ))
+                        messages.append(
+                            ChatMessage(
+                                role="assistant",
+                                content=t("orch.tool_blocked_msg", tool=tool_name),
+                            )
+                        )
                         continue
 
                     # Create approval request FIRST so we have an ID
@@ -194,7 +208,7 @@ class AgentOrchestrator:
                         tool=tool_name,
                         params=tool_params,
                         description=tool_def.get_description(),
-                        risk_level=tool_def.risk_level.value
+                        risk_level=tool_def.risk_level.value,
                     )
 
                     # Yield tool request with approval_id to UI
@@ -204,30 +218,31 @@ class AgentOrchestrator:
                         "params": tool_params,
                         "description": tool_def.description_de,
                         "risk_level": tool_def.risk_level.value,
-                        "approval_id": approval_id
+                        "approval_id": approval_id,
                     }
 
                     # Wait for approval decision
-                    decision = await on_approval_needed({
-                        "tool": tool_name,
-                        "params": tool_params,
-                        "description": tool_def.description_de,
-                        "risk_level": tool_def.risk_level.value,
-                        "approval_id": approval_id
-                    })
+                    decision = await on_approval_needed(
+                        {
+                            "tool": tool_name,
+                            "params": tool_params,
+                            "description": tool_def.description_de,
+                            "risk_level": tool_def.risk_level.value,
+                            "approval_id": approval_id,
+                        }
+                    )
 
                     if decision is None:
                         await self.audit.log_tool_rejection(
                             session_id, tool_name, tool_params, "rejected"
                         )
-                        yield {
-                            "type": "tool_rejected",
-                            "tool": tool_name
-                        }
-                        messages.append(ChatMessage(
-                            role="assistant",
-                            content=t("orch.user_rejected", tool=tool_name)
-                        ))
+                        yield {"type": "tool_rejected", "tool": tool_name}
+                        messages.append(
+                            ChatMessage(
+                                role="assistant",
+                                content=t("orch.user_rejected", tool=tool_name),
+                            )
+                        )
                         continue
 
                     # Grant permission
@@ -241,40 +256,45 @@ class AgentOrchestrator:
                 # Execute the tool (pass db_session for memory tools)
                 start_time = time.time()
                 try:
-                    result = await execute_tool(tool_name, tool_params, db_session=self.audit.db)
+                    result = await execute_tool(
+                        tool_name, tool_params, db_session=self.audit.db
+                    )
                     execution_time_ms = int((time.time() - start_time) * 1000)
 
                     await self.audit.log_tool_execution(
-                        session_id, tool_name, tool_params,
-                        str(result), execution_time_ms
+                        session_id,
+                        tool_name,
+                        tool_params,
+                        str(result),
+                        execution_time_ms,
                     )
 
                     yield {
                         "type": "tool_result",
                         "tool": tool_name,
                         "result": result,
-                        "execution_time_ms": execution_time_ms
+                        "execution_time_ms": execution_time_ms,
                     }
 
                     # Add result to messages for next LLM call
-                    messages.append(ChatMessage(
-                        role="assistant",
-                        content=f"Tool {tool_name} executed. Result: {str(result)[:500]}"
-                    ))
+                    messages.append(
+                        ChatMessage(
+                            role="assistant",
+                            content=f"Tool {tool_name} executed. Result: {str(result)[:500]}",
+                        )
+                    )
 
                 except ToolExecutionError as e:
                     await self.audit.log_tool_failure(
                         session_id, tool_name, tool_params, str(e)
                     )
-                    yield {
-                        "type": "tool_error",
-                        "tool": tool_name,
-                        "error": str(e)
-                    }
-                    messages.append(ChatMessage(
-                        role="assistant",
-                        content=f"Tool {tool_name} failed: {str(e)}"
-                    ))
+                    yield {"type": "tool_error", "tool": tool_name, "error": str(e)}
+                    messages.append(
+                        ChatMessage(
+                            role="assistant",
+                            content=f"Tool {tool_name} failed: {str(e)}",
+                        )
+                    )
 
                 except Exception as e:
                     logger.exception(f"Unexpected error executing {tool_name}")
@@ -284,7 +304,7 @@ class AgentOrchestrator:
                     yield {
                         "type": "tool_error",
                         "tool": tool_name,
-                        "error": f"Unexpected error: {str(e)}"
+                        "error": f"Unexpected error: {str(e)}",
                     }
 
             # If we had partial text response, yield it
@@ -292,8 +312,5 @@ class AgentOrchestrator:
                 yield {"type": "text", "content": response.content}
 
         # Max iterations reached
-        yield {
-            "type": "warning",
-            "message": "Maximum tool iterations reached"
-        }
+        yield {"type": "warning", "message": "Maximum tool iterations reached"}
         yield {"type": "done"}

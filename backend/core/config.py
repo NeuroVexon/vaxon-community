@@ -90,11 +90,25 @@ class Settings(BaseSettings):
 
     # Shell Whitelist
     shell_whitelist: list[str] = [
-        "ls", "dir", "cat", "type", "head", "tail", "wc",
-        "grep", "find", "date", "pwd", "echo",
-        "python --version", "python3 --version",
-        "node --version", "npm --version",
-        "pip list", "pip freeze", "npm list"
+        "ls",
+        "dir",
+        "cat",
+        "type",
+        "head",
+        "tail",
+        "wc",
+        "grep",
+        "find",
+        "date",
+        "pwd",
+        "echo",
+        "python --version",
+        "python3 --version",
+        "node --version",
+        "npm --version",
+        "pip list",
+        "pip freeze",
+        "npm list",
     ]
 
     class Config:

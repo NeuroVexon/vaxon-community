@@ -41,8 +41,7 @@ async def upload_document(
     if not is_allowed_file(file.filename):
         allowed = ", ".join(sorted(ALLOWED_EXTENSIONS))
         raise HTTPException(
-            status_code=400,
-            detail=t("upload.type_not_allowed", allowed=allowed)
+            status_code=400, detail=t("upload.type_not_allowed", allowed=allowed)
         )
 
     # Datei lesen und Groesse pruefen
@@ -50,7 +49,7 @@ async def upload_document(
     if len(content) > MAX_FILE_SIZE:
         raise HTTPException(
             status_code=400,
-            detail=t("upload.too_large", max_mb=MAX_FILE_SIZE // 1024 // 1024)
+            detail=t("upload.too_large", max_mb=MAX_FILE_SIZE // 1024 // 1024),
         )
 
     # Speicherpfad erstellen
@@ -118,7 +117,9 @@ async def list_documents(
 
 
 @router.delete("/{doc_id}")
-async def delete_document(doc_id: str, request: Request, db: AsyncSession = Depends(get_db)):
+async def delete_document(
+    doc_id: str, request: Request, db: AsyncSession = Depends(get_db)
+):
     """Dokument loeschen"""
     set_language(get_lang_from_header(request.headers.get("accept-language")))
     doc = await db.get(UploadedDocument, doc_id)

@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 # Cache TTL: re-check availability after 5 minutes if unavailable
 _CACHE_TTL_UNAVAILABLE = 300  # seconds
-_CACHE_TTL_AVAILABLE = 3600   # 1 hour for positive results
+_CACHE_TTL_AVAILABLE = 3600  # 1 hour for positive results
 
 
 class EmbeddingProvider:
@@ -55,7 +55,9 @@ class EmbeddingProvider:
         if self._available:
             logger.info(f"Embedding model '{self.model}' verfuegbar")
         else:
-            logger.info(f"Embedding model '{self.model}' nicht verfuegbar — Fallback auf ILIKE")
+            logger.info(
+                f"Embedding model '{self.model}' nicht verfuegbar — Fallback auf ILIKE"
+            )
 
         return self._available
 
@@ -73,7 +75,7 @@ class EmbeddingProvider:
             async with httpx.AsyncClient(timeout=30.0) as client:
                 resp = await client.post(
                     f"{self.base_url}/api/embed",
-                    json={"model": self.model, "input": text}
+                    json={"model": self.model, "input": text},
                 )
                 resp.raise_for_status()
                 data = resp.json()
@@ -97,7 +99,7 @@ class EmbeddingProvider:
             async with httpx.AsyncClient(timeout=60.0) as client:
                 resp = await client.post(
                     f"{self.base_url}/api/embed",
-                    json={"model": self.model, "input": texts}
+                    json={"model": self.model, "input": texts},
                 )
                 resp.raise_for_status()
                 data = resp.json()
@@ -120,6 +122,7 @@ def cosine_similarity(a: list[float], b: list[float]) -> float:
     """Cosine similarity between two vectors using numpy"""
     try:
         import numpy as np
+
         a_arr = np.array(a, dtype=np.float32)
         b_arr = np.array(b, dtype=np.float32)
         dot = np.dot(a_arr, b_arr)

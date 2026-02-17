@@ -10,7 +10,12 @@ from typing import Any
 import logging
 
 from core.config import settings
-from core.security import validate_path, validate_url, validate_shell_command, sanitize_filename
+from core.security import (
+    validate_path,
+    validate_url,
+    validate_shell_command,
+    sanitize_filename,
+)
 from core.i18n import t
 
 logger = logging.getLogger(__name__)
@@ -18,6 +23,7 @@ logger = logging.getLogger(__name__)
 
 class ToolExecutionError(Exception):
     """Error during tool execution"""
+
     pass
 
 
@@ -66,7 +72,9 @@ async def handle_file_read(params: dict) -> str:
         file_size = os.path.getsize(path)
         max_size = settings.max_file_size_mb * 1024 * 1024
         if file_size > max_size:
-            raise ToolExecutionError(f"File too large: {file_size / 1024 / 1024:.2f}MB (max: {settings.max_file_size_mb}MB)")
+            raise ToolExecutionError(
+                f"File too large: {file_size / 1024 / 1024:.2f}MB (max: {settings.max_file_size_mb}MB)"
+            )
 
         with open(path, "r", encoding=encoding) as f:
             return f.read()
@@ -123,18 +131,22 @@ async def handle_file_list(params: dict) -> list[dict]:
             for item in path_obj.rglob("*"):
                 if len(files) >= 100:  # Limit
                     break
-                files.append({
-                    "name": str(item.relative_to(path_obj)),
-                    "type": "dir" if item.is_dir() else "file",
-                    "size": item.stat().st_size if item.is_file() else 0
-                })
+                files.append(
+                    {
+                        "name": str(item.relative_to(path_obj)),
+                        "type": "dir" if item.is_dir() else "file",
+                        "size": item.stat().st_size if item.is_file() else 0,
+                    }
+                )
         else:
             for item in path_obj.iterdir():
-                files.append({
-                    "name": item.name,
-                    "type": "dir" if item.is_dir() else "file",
-                    "size": item.stat().st_size if item.is_file() else 0
-                })
+                files.append(
+                    {
+                        "name": item.name,
+                        "type": "dir" if item.is_dir() else "file",
+                        "size": item.stat().st_size if item.is_file() else 0,
+                    }
+                )
 
         return files
     except Exception as e:
@@ -174,6 +186,7 @@ async def handle_web_search(params: dict) -> list[dict]:
     # Try DDGS library first
     try:
         from duckduckgo_search import DDGS
+
         with DDGS() as ddgs:
             results = list(ddgs.text(query, max_results=max_results))
             if results:
@@ -181,7 +194,7 @@ async def handle_web_search(params: dict) -> list[dict]:
                     {
                         "title": r.get("title", ""),
                         "url": r.get("href", ""),
-                        "snippet": r.get("body", "")
+                        "snippet": r.get("body", ""),
                     }
                     for r in results
                 ]
@@ -194,7 +207,7 @@ async def handle_web_search(params: dict) -> list[dict]:
             resp = await client.get(
                 "https://lite.duckduckgo.com/lite/",
                 params={"q": query},
-                headers={"User-Agent": "Mozilla/5.0 (compatible; Axon/1.1)"}
+                headers={"User-Agent": "Mozilla/5.0 (compatible; Axon/1.1)"},
             )
             resp.raise_for_status()
 
@@ -202,26 +215,27 @@ async def handle_web_search(params: dict) -> list[dict]:
             # Find all result links — href may appear before or after class
             links = _re.findall(
                 r"""<a[^>]*href=["']([^"']+)["'][^>]*class=.result-link[^>]*>(.+?)</a>""",
-                resp.text, _re.DOTALL
+                resp.text,
+                _re.DOTALL,
             )
             if not links:
                 # Try reverse order (class before href)
                 links = _re.findall(
                     r"""<a[^>]*class=.result-link[^>]*href=["']([^"']+)["'][^>]*>(.+?)</a>""",
-                    resp.text, _re.DOTALL
+                    resp.text,
+                    _re.DOTALL,
                 )
             # Find all snippets
             snippets = _re.findall(
-                r"""class=.result-snippet.[^>]*>(.+?)</td>""",
-                resp.text, _re.DOTALL
+                r"""class=.result-snippet.[^>]*>(.+?)</td>""", resp.text, _re.DOTALL
             )
 
             for i, (url, title) in enumerate(links[:max_results]):
-                title = _re.sub(r'<[^>]+>', '', title).strip()
-                title = title.replace('&quot;', '"').replace('&amp;', '&')
+                title = _re.sub(r"<[^>]+>", "", title).strip()
+                title = title.replace("&quot;", '"').replace("&amp;", "&")
                 snippet = ""
                 if i < len(snippets):
-                    snippet = _re.sub(r'<[^>]+>', '', snippets[i]).strip()
+                    snippet = _re.sub(r"<[^>]+>", "", snippets[i]).strip()
                 if title:
                     results.append({"title": title, "url": url, "snippet": snippet})
 
@@ -249,14 +263,9 @@ async def handle_shell_execute(params: dict) -> str:
 
     try:
         process = await asyncio.create_subprocess_shell(
-            command,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
+            command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
         )
-        stdout, stderr = await asyncio.wait_for(
-            process.communicate(),
-            timeout=30.0
-        )
+        stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=30.0)
 
         output = stdout.decode("utf-8", errors="replace")
         if stderr:
@@ -344,12 +353,14 @@ async def handle_memory_delete(params: dict) -> str:
 async def handle_email_inbox(params: dict) -> str:
     """Read emails from inbox (readonly)"""
     from skills.email_inbox import execute
+
     return await execute(params)
 
 
 async def handle_email_send(params: dict) -> str:
     """Send an email via SMTP"""
     from skills.email_send import execute
+
     return await execute(params)
 
 

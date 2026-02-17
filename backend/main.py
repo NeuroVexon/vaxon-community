@@ -6,6 +6,7 @@ Agentic AI - ohne Kontrollverlust.
 
 import sys
 import os
+import asyncio
 
 # Add backend directory to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -50,6 +51,20 @@ async def lifespan(app: FastAPI):
 
     # Create outputs directory
     os.makedirs(settings.outputs_dir, exist_ok=True)
+
+    # Start Telegram Bot if enabled
+    if settings.telegram_enabled and settings.telegram_bot_token:
+        try:
+            from integrations.telegram import start_bot_async
+            asyncio.create_task(start_bot_async())
+            logger.info("Telegram Bot gestartet")
+        except Exception as e:
+            logger.warning(f"Telegram Bot konnte nicht gestartet werden: {e}")
+
+    # Discord Bot runs as separate process (blocking event loop)
+    # Start via: python -m integrations.discord
+    if settings.discord_enabled and settings.discord_bot_token:
+        logger.info("Discord Bot ist aktiviert — starte separat mit: python -m integrations.discord")
 
     yield
 

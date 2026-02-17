@@ -9,7 +9,7 @@ import SchedulerView from './components/Scheduler/SchedulerView'
 import WorkflowsView from './components/Workflows/WorkflowsView'
 import Dashboard from './components/Dashboard/Dashboard'
 import { api } from './services/api'
-import { Settings as SettingsIcon, Save, Loader2, Check, Key, Eye, EyeOff, Mail, CheckCircle, XCircle, Globe } from 'lucide-react'
+import { Settings as SettingsIcon, Save, Loader2, Check, Key, Eye, EyeOff, Mail, CheckCircle, XCircle, Globe, MessageCircle, Hash } from 'lucide-react'
 import clsx from 'clsx'
 import { useTranslation } from 'react-i18next'
 
@@ -26,9 +26,18 @@ interface Settings {
   anthropic_api_key_masked?: string
   openai_api_key_set?: boolean
   openai_api_key_masked?: string
+  gemini_api_key_set?: boolean
+  gemini_api_key_masked?: string
+  groq_api_key_set?: boolean
+  groq_api_key_masked?: string
+  openrouter_api_key_set?: boolean
+  openrouter_api_key_masked?: string
   ollama_model?: string
   claude_model?: string
   openai_model?: string
+  gemini_model?: string
+  groq_model?: string
+  openrouter_model?: string
   // E-Mail
   email_enabled?: boolean
   imap_host?: string
@@ -40,6 +49,11 @@ interface Settings {
   smtp_user?: string
   smtp_password_set?: boolean
   smtp_from?: string
+  // Telegram / Discord
+  telegram_enabled?: boolean
+  telegram_bot_token_set?: boolean
+  discord_enabled?: boolean
+  discord_bot_token_set?: boolean
 }
 
 function SettingsView() {
@@ -52,8 +66,19 @@ function SettingsView() {
   const [systemPrompt, setSystemPrompt] = useState('')
   const [anthropicKey, setAnthropicKey] = useState('')
   const [openaiKey, setOpenaiKey] = useState('')
+  const [geminiKey, setGeminiKey] = useState('')
+  const [groqKey, setGroqKey] = useState('')
+  const [openrouterKey, setOpenrouterKey] = useState('')
   const [showAnthropicKey, setShowAnthropicKey] = useState(false)
   const [showOpenaiKey, setShowOpenaiKey] = useState(false)
+  const [showGeminiKey, setShowGeminiKey] = useState(false)
+  const [showGroqKey, setShowGroqKey] = useState(false)
+  const [showOpenrouterKey, setShowOpenrouterKey] = useState(false)
+  // Telegram / Discord
+  const [telegramEnabled, setTelegramEnabled] = useState(false)
+  const [telegramToken, setTelegramToken] = useState('')
+  const [discordEnabled, setDiscordEnabled] = useState(false)
+  const [discordToken, setDiscordToken] = useState('')
   // E-Mail
   const [emailEnabled, setEmailEnabled] = useState(false)
   const [imapHost, setImapHost] = useState('')
@@ -88,6 +113,9 @@ function SettingsView() {
       setSmtpPort(data.smtp_port || '587')
       setSmtpUser(data.smtp_user || '')
       setSmtpFrom(data.smtp_from || '')
+      // Telegram / Discord
+      setTelegramEnabled(data.telegram_enabled || false)
+      setDiscordEnabled(data.discord_enabled || false)
       // Don't load actual keys/passwords - just show if they're set
     } catch (error) {
       console.error('Failed to load settings:', error)
@@ -109,27 +137,31 @@ function SettingsView() {
         smtp_port: smtpPort,
         smtp_user: smtpUser,
         smtp_from: smtpFrom,
+        telegram_enabled: telegramEnabled ? 'true' : 'false',
+        discord_enabled: discordEnabled ? 'true' : 'false',
       }
       // Only send API keys/passwords if they were changed (not empty)
-      if (anthropicKey) {
-        updates.anthropic_api_key = anthropicKey
-      }
-      if (openaiKey) {
-        updates.openai_api_key = openaiKey
-      }
-      if (imapPassword) {
-        updates.imap_password = imapPassword
-      }
-      if (smtpPassword) {
-        updates.smtp_password = smtpPassword
-      }
+      if (anthropicKey) updates.anthropic_api_key = anthropicKey
+      if (openaiKey) updates.openai_api_key = openaiKey
+      if (geminiKey) updates.gemini_api_key = geminiKey
+      if (groqKey) updates.groq_api_key = groqKey
+      if (openrouterKey) updates.openrouter_api_key = openrouterKey
+      if (imapPassword) updates.imap_password = imapPassword
+      if (smtpPassword) updates.smtp_password = smtpPassword
+      if (telegramToken) updates.telegram_bot_token = telegramToken
+      if (discordToken) updates.discord_bot_token = discordToken
       await api.updateSettings(updates)
       setSaved(true)
       // Clear the key/password inputs after save
       setAnthropicKey('')
       setOpenaiKey('')
+      setGeminiKey('')
+      setGroqKey('')
+      setOpenrouterKey('')
       setImapPassword('')
       setSmtpPassword('')
+      setTelegramToken('')
+      setDiscordToken('')
       // Reload settings to get updated masked keys
       await loadSettings()
       setTimeout(() => setSaved(false), 2000)
@@ -179,6 +211,9 @@ function SettingsView() {
               {provider === 'ollama' && t('settings.providerOllama')}
               {provider === 'claude' && t('settings.providerClaude')}
               {provider === 'openai' && t('settings.providerOpenai')}
+              {provider === 'gemini' && t('settings.providerGemini')}
+              {provider === 'groq' && t('settings.providerGroq')}
+              {provider === 'openrouter' && t('settings.providerOpenrouter')}
             </p>
           </div>
 
@@ -252,6 +287,117 @@ function SettingsView() {
                 {t('settings.getKeyOpenai')}{' '}
                 <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer"
                    className="text-nv-accent hover:underline">platform.openai.com</a>
+              </p>
+            </div>
+          )}
+
+          {/* Gemini API Key */}
+          {provider === 'gemini' && (
+            <div className="bg-nv-black-200 rounded-xl p-6 border border-nv-gray-light">
+              <div className="flex items-center gap-2 mb-4">
+                <Key className="w-5 h-5 text-nv-accent" />
+                <h2 className="text-lg font-semibold">Google Gemini API Key</h2>
+              </div>
+              {settings?.gemini_api_key_set && (
+                <p className="text-sm text-green-400 mb-3">
+                  {t('settings.apiKeySet', { masked: settings.gemini_api_key_masked })}
+                </p>
+              )}
+              <div className="relative">
+                <input
+                  type={showGeminiKey ? 'text' : 'password'}
+                  value={geminiKey}
+                  onChange={(e) => setGeminiKey(e.target.value)}
+                  placeholder={settings?.gemini_api_key_set ? t('settings.changeKey') : 'AIza...'}
+                  className="w-full px-4 py-3 pr-12 bg-nv-black border border-nv-gray-light rounded-lg
+                             text-white placeholder-gray-500 focus:outline-none focus:border-nv-accent font-mono"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowGeminiKey(!showGeminiKey)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
+                >
+                  {showGeminiKey ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                {t('settings.getKeyGemini')}{' '}
+                <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer"
+                   className="text-nv-accent hover:underline">aistudio.google.com</a>
+              </p>
+            </div>
+          )}
+
+          {/* Groq API Key */}
+          {provider === 'groq' && (
+            <div className="bg-nv-black-200 rounded-xl p-6 border border-nv-gray-light">
+              <div className="flex items-center gap-2 mb-4">
+                <Key className="w-5 h-5 text-nv-accent" />
+                <h2 className="text-lg font-semibold">Groq API Key</h2>
+              </div>
+              {settings?.groq_api_key_set && (
+                <p className="text-sm text-green-400 mb-3">
+                  {t('settings.apiKeySet', { masked: settings.groq_api_key_masked })}
+                </p>
+              )}
+              <div className="relative">
+                <input
+                  type={showGroqKey ? 'text' : 'password'}
+                  value={groqKey}
+                  onChange={(e) => setGroqKey(e.target.value)}
+                  placeholder={settings?.groq_api_key_set ? t('settings.changeKey') : 'gsk_...'}
+                  className="w-full px-4 py-3 pr-12 bg-nv-black border border-nv-gray-light rounded-lg
+                             text-white placeholder-gray-500 focus:outline-none focus:border-nv-accent font-mono"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowGroqKey(!showGroqKey)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
+                >
+                  {showGroqKey ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                {t('settings.getKeyGroq')}{' '}
+                <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer"
+                   className="text-nv-accent hover:underline">console.groq.com</a>
+              </p>
+            </div>
+          )}
+
+          {/* OpenRouter API Key */}
+          {provider === 'openrouter' && (
+            <div className="bg-nv-black-200 rounded-xl p-6 border border-nv-gray-light">
+              <div className="flex items-center gap-2 mb-4">
+                <Key className="w-5 h-5 text-nv-accent" />
+                <h2 className="text-lg font-semibold">OpenRouter API Key</h2>
+              </div>
+              {settings?.openrouter_api_key_set && (
+                <p className="text-sm text-green-400 mb-3">
+                  {t('settings.apiKeySet', { masked: settings.openrouter_api_key_masked })}
+                </p>
+              )}
+              <div className="relative">
+                <input
+                  type={showOpenrouterKey ? 'text' : 'password'}
+                  value={openrouterKey}
+                  onChange={(e) => setOpenrouterKey(e.target.value)}
+                  placeholder={settings?.openrouter_api_key_set ? t('settings.changeKey') : 'sk-or-...'}
+                  className="w-full px-4 py-3 pr-12 bg-nv-black border border-nv-gray-light rounded-lg
+                             text-white placeholder-gray-500 focus:outline-none focus:border-nv-accent font-mono"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowOpenrouterKey(!showOpenrouterKey)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
+                >
+                  {showOpenrouterKey ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                {t('settings.getKeyOpenrouter')}{' '}
+                <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer"
+                   className="text-nv-accent hover:underline">openrouter.ai</a>
               </p>
             </div>
           )}
@@ -383,6 +529,60 @@ function SettingsView() {
                   {t('settings.emailReadonly')}
                 </p>
               </div>
+            )}
+          </div>
+
+          {/* Telegram Integration */}
+          <div className="bg-nv-black-200 rounded-xl p-6 border border-nv-gray-light">
+            <div className="flex items-center gap-2 mb-4">
+              <MessageCircle className="w-5 h-5 text-nv-accent" />
+              <h2 className="text-lg font-semibold">{t('settings.telegram')}</h2>
+            </div>
+            <label className="flex items-center gap-3 cursor-pointer mb-4">
+              <input
+                type="checkbox"
+                checked={telegramEnabled}
+                onChange={(e) => setTelegramEnabled(e.target.checked)}
+                className="accent-nv-accent w-4 h-4"
+              />
+              <span className="text-sm font-medium">{t('settings.telegramEnabled')}</span>
+            </label>
+            {telegramEnabled && (
+              <input
+                type="password"
+                value={telegramToken}
+                onChange={(e) => setTelegramToken(e.target.value)}
+                placeholder={settings?.telegram_bot_token_set ? t('settings.telegramTokenSet') : t('settings.telegramTokenPlaceholder')}
+                className="w-full px-4 py-3 bg-nv-black border border-nv-gray-light rounded-lg
+                           text-white placeholder-gray-500 focus:outline-none focus:border-nv-accent font-mono"
+              />
+            )}
+          </div>
+
+          {/* Discord Integration */}
+          <div className="bg-nv-black-200 rounded-xl p-6 border border-nv-gray-light">
+            <div className="flex items-center gap-2 mb-4">
+              <Hash className="w-5 h-5 text-nv-accent" />
+              <h2 className="text-lg font-semibold">{t('settings.discord')}</h2>
+            </div>
+            <label className="flex items-center gap-3 cursor-pointer mb-4">
+              <input
+                type="checkbox"
+                checked={discordEnabled}
+                onChange={(e) => setDiscordEnabled(e.target.checked)}
+                className="accent-nv-accent w-4 h-4"
+              />
+              <span className="text-sm font-medium">{t('settings.discordEnabled')}</span>
+            </label>
+            {discordEnabled && (
+              <input
+                type="password"
+                value={discordToken}
+                onChange={(e) => setDiscordToken(e.target.value)}
+                placeholder={settings?.discord_bot_token_set ? t('settings.discordTokenSet') : t('settings.discordTokenPlaceholder')}
+                className="w-full px-4 py-3 bg-nv-black border border-nv-gray-light rounded-lg
+                           text-white placeholder-gray-500 focus:outline-none focus:border-nv-accent font-mono"
+              />
             )}
           </div>
 

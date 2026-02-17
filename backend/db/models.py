@@ -2,7 +2,7 @@
 Axon by NeuroVexon - Database Models
 """
 
-from sqlalchemy import Column, String, Text, DateTime, Integer, Boolean, JSON, ForeignKey
+from sqlalchemy import Column, String, Text, DateTime, Integer, Boolean, JSON, ForeignKey, LargeBinary
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import uuid
@@ -82,6 +82,7 @@ class Memory(Base):
     content = Column(Text, nullable=False)  # Der eigentliche Fakt
     source = Column(String(50), nullable=False, default="user")  # user, agent, system
     category = Column(String(100), nullable=True)  # optional: Kategorie
+    embedding = Column(LargeBinary, nullable=True)  # Vektor-Embedding als Bytes (numpy float32)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

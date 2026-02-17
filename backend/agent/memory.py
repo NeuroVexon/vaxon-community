@@ -1,23 +1,39 @@
 """
 Axon by NeuroVexon - Persistent Memory Manager
 
-Verwaltet das Langzeitgedächtnis des Agenten.
+Verwaltet das Langzeitgedaechtnis des Agenten.
 Memories werden in der DB gespeichert und bei jeder Konversation
 als Kontext in den System-Prompt injiziert.
+
+v2.0: Semantische Suche via Embeddings (Ollama nomic-embed-text).
+Fallback auf ILIKE wenn Embeddings nicht verfuegbar.
 """
 
 import logging
+import struct
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
 
 from db.models import Memory
+from agent.embeddings import embedding_provider, cosine_similarity
 
 logger = logging.getLogger(__name__)
 
 # Maximale Anzahl Memories im System-Prompt (Token-Budget)
 MAX_MEMORIES_IN_PROMPT = 30
 MAX_MEMORY_CONTENT_LENGTH = 500
+
+
+def _serialize_embedding(embedding: list[float]) -> bytes:
+    """Serialize embedding list to bytes (float32)"""
+    return struct.pack(f'{len(embedding)}f', *embedding)
+
+
+def _deserialize_embedding(data: bytes) -> list[float]:
+    """Deserialize bytes back to embedding list"""
+    count = len(data) // 4  # float32 = 4 bytes
+    return list(struct.unpack(f'{count}f', data))
 
 
 class MemoryManager:
@@ -37,6 +53,11 @@ class MemoryManager:
         key = key.strip()[:255]
         content = content.strip()[:MAX_MEMORY_CONTENT_LENGTH]
 
+        # Generate embedding for the combined key+content
+        embed_text = f"{key}: {content}"
+        embedding = await embedding_provider.embed(embed_text)
+        embedding_bytes = _serialize_embedding(embedding) if embedding else None
+
         # Check if key already exists — update if so
         result = await self.db.execute(
             select(Memory).where(Memory.key == key)
@@ -46,6 +67,7 @@ class MemoryManager:
         if existing:
             existing.content = content
             existing.source = source
+            existing.embedding = embedding_bytes
             if category:
                 existing.category = category
             await self.db.flush()
@@ -56,7 +78,8 @@ class MemoryManager:
             key=key,
             content=content,
             source=source,
-            category=category
+            category=category,
+            embedding=embedding_bytes
         )
         self.db.add(memory)
         await self.db.flush()
@@ -110,7 +133,77 @@ class MemoryManager:
         return True
 
     async def search(self, query: str, limit: int = 10) -> list[Memory]:
-        """Simple text search in key and content"""
+        """
+        Semantic search via embeddings with ILIKE fallback.
+
+        1. Embed the query
+        2. Load all memories with embeddings
+        3. Rank by cosine similarity
+        4. Fallback to ILIKE if no embeddings available
+        """
+        # Try semantic search first
+        query_embedding = await embedding_provider.embed(query)
+
+        if query_embedding:
+            # Load all memories (bei <1000 kein Performance-Problem)
+            result = await self.db.execute(select(Memory))
+            all_memories = list(result.scalars().all())
+
+            # Score memories with embeddings
+            scored = []
+            unscored = []
+            for mem in all_memories:
+                if mem.embedding:
+                    mem_embedding = _deserialize_embedding(mem.embedding)
+                    score = cosine_similarity(query_embedding, mem_embedding)
+                    scored.append((score, mem))
+                else:
+                    unscored.append(mem)
+
+            if scored:
+                # Sort by similarity (highest first)
+                scored.sort(key=lambda x: x[0], reverse=True)
+                # Filter by minimum threshold
+                results = [mem for score, mem in scored if score > 0.3][:limit]
+
+                if results:
+                    logger.info(f"Semantic search for '{query}': {len(results)} results (best score: {scored[0][0]:.3f})")
+                    return results
+
+            # If no scored results, try to embed unscored memories lazily
+            if unscored:
+                logger.info(f"{len(unscored)} memories without embeddings — generating lazily")
+                for mem in unscored[:50]:  # Max 50 auf einmal
+                    embed_text = f"{mem.key}: {mem.content}"
+                    emb = await embedding_provider.embed(embed_text)
+                    if emb:
+                        mem.embedding = _serialize_embedding(emb)
+                await self.db.flush()
+
+                # Retry search after embedding
+                return await self._semantic_search(query_embedding, all_memories, limit)
+
+        # Fallback: ILIKE text search
+        logger.info(f"Fallback to ILIKE search for: {query}")
+        return await self._ilike_search(query, limit)
+
+    async def _semantic_search(
+        self, query_embedding: list[float], memories: list[Memory], limit: int
+    ) -> list[Memory]:
+        """Perform semantic search on a list of memories"""
+        scored = []
+        for mem in memories:
+            if mem.embedding:
+                mem_embedding = _deserialize_embedding(mem.embedding)
+                score = cosine_similarity(query_embedding, mem_embedding)
+                scored.append((score, mem))
+
+        scored.sort(key=lambda x: x[0], reverse=True)
+        results = [mem for score, mem in scored if score > 0.3][:limit]
+        return results
+
+    async def _ilike_search(self, query: str, limit: int) -> list[Memory]:
+        """Traditional ILIKE text search"""
         search_term = f"%{query.lower()}%"
         result = await self.db.execute(
             select(Memory)
@@ -142,7 +235,7 @@ class MemoryManager:
                 facts.append(f"{mem.key}: {mem.content}")
             return "Bekannte Fakten: " + ". ".join(facts) + "."
 
-        lines = ["", "## Dein Gedächtnis (persistente Fakten)", ""]
+        lines = ["", "## Dein Gedaechtnis (persistente Fakten)", ""]
         for mem in memories:
             category_tag = f" [{mem.category}]" if mem.category else ""
             lines.append(f"- **{mem.key}**{category_tag}: {mem.content}")

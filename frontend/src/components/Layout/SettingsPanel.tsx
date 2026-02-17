@@ -112,6 +112,9 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                   {provider === 'ollama' && t('settings.providerOllamaPanel')}
                   {provider === 'claude' && t('settings.providerClaude')}
                   {provider === 'openai' && t('settings.providerOpenai')}
+                  {provider === 'gemini' && t('settings.providerGemini')}
+                  {provider === 'groq' && t('settings.providerGroq')}
+                  {provider === 'openrouter' && t('settings.providerOpenrouter')}
                 </p>
               </div>
 

@@ -11,6 +11,9 @@ class LLMProvider(str, Enum):
     OLLAMA = "ollama"
     CLAUDE = "claude"
     OPENAI = "openai"
+    GEMINI = "gemini"
+    GROQ = "groq"
+    OPENROUTER = "openrouter"
 
 
 class Settings(BaseSettings):
@@ -41,6 +44,18 @@ class Settings(BaseSettings):
     openai_api_key: Optional[str] = None
     openai_model: str = "gpt-4o"
 
+    # Google Gemini API
+    gemini_api_key: Optional[str] = None
+    gemini_model: str = "gemini-2.0-flash"
+
+    # Groq API (OpenAI-compatible)
+    groq_api_key: Optional[str] = None
+    groq_model: str = "llama-3.3-70b-versatile"
+
+    # OpenRouter API (OpenAI-compatible)
+    openrouter_api_key: Optional[str] = None
+    openrouter_model: str = "anthropic/claude-sonnet-4"
+
     # Security
     secret_key: str = "change-me-in-production-use-openssl-rand-hex-32"
 
@@ -61,6 +76,17 @@ class Settings(BaseSettings):
     smtp_user: str = ""
     smtp_password: str = ""
     smtp_from: str = ""
+
+    # Telegram Integration
+    telegram_enabled: bool = False
+    telegram_bot_token: Optional[str] = None
+    telegram_allowed_users: str = ""
+
+    # Discord Integration
+    discord_enabled: bool = False
+    discord_bot_token: Optional[str] = None
+    discord_allowed_channels: str = ""
+    discord_allowed_users: str = ""
 
     # Shell Whitelist
     shell_whitelist: list[str] = [

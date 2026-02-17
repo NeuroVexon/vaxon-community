@@ -17,7 +17,12 @@ from llm.router import llm_router
 from core.i18n import t, set_language, get_lang_from_header
 
 # Keys that must be encrypted in the database
-ENCRYPTED_KEYS = {"anthropic_api_key", "openai_api_key", "imap_password", "smtp_password", "mcp_auth_token"}
+ENCRYPTED_KEYS = {
+    "anthropic_api_key", "openai_api_key", "gemini_api_key",
+    "groq_api_key", "openrouter_api_key",
+    "imap_password", "smtp_password", "mcp_auth_token",
+    "telegram_bot_token", "discord_bot_token"
+}
 
 router = APIRouter(prefix="/settings", tags=["settings"])
 
@@ -28,9 +33,15 @@ class SettingsUpdate(BaseModel):
     system_prompt: Optional[str] = None
     anthropic_api_key: Optional[str] = None
     openai_api_key: Optional[str] = None
+    gemini_api_key: Optional[str] = None
+    groq_api_key: Optional[str] = None
+    openrouter_api_key: Optional[str] = None
     ollama_model: Optional[str] = None
     claude_model: Optional[str] = None
     openai_model: Optional[str] = None
+    gemini_model: Optional[str] = None
+    groq_model: Optional[str] = None
+    openrouter_model: Optional[str] = None
     # E-Mail
     email_enabled: Optional[str] = None
     imap_host: Optional[str] = None
@@ -45,6 +56,11 @@ class SettingsUpdate(BaseModel):
     # MCP
     mcp_enabled: Optional[str] = None
     mcp_auth_token: Optional[str] = None
+    # Telegram / Discord
+    telegram_enabled: Optional[str] = None
+    telegram_bot_token: Optional[str] = None
+    discord_enabled: Optional[str] = None
+    discord_bot_token: Optional[str] = None
     # Language
     language: Optional[str] = None
 
@@ -63,10 +79,17 @@ async def get_settings(db: AsyncSession = Depends(get_db)):
     db_settings = {s.key: s.value for s in result.scalars().all()}
 
     # Get API keys (from DB first — decrypt — then fallback to env)
-    anthropic_key_encrypted = db_settings.get("anthropic_api_key")
-    anthropic_key = decrypt_value(anthropic_key_encrypted) if anthropic_key_encrypted else app_settings.anthropic_api_key
-    openai_key_encrypted = db_settings.get("openai_api_key")
-    openai_key = decrypt_value(openai_key_encrypted) if openai_key_encrypted else app_settings.openai_api_key
+    def _get_key(db_key: str, env_fallback):
+        encrypted = db_settings.get(db_key)
+        return decrypt_value(encrypted) if encrypted else env_fallback
+
+    anthropic_key = _get_key("anthropic_api_key", app_settings.anthropic_api_key)
+    openai_key = _get_key("openai_api_key", app_settings.openai_api_key)
+    gemini_key = _get_key("gemini_api_key", app_settings.gemini_api_key)
+    groq_key = _get_key("groq_api_key", app_settings.groq_api_key)
+    openrouter_key = _get_key("openrouter_api_key", app_settings.openrouter_api_key)
+    telegram_token = _get_key("telegram_bot_token", None)
+    discord_token = _get_key("discord_bot_token", None)
 
     return {
         "app_name": app_settings.app_name,
@@ -80,10 +103,19 @@ async def get_settings(db: AsyncSession = Depends(get_db)):
         "anthropic_api_key_masked": mask_api_key(anthropic_key),
         "openai_api_key_set": bool(openai_key),
         "openai_api_key_masked": mask_api_key(openai_key),
+        "gemini_api_key_set": bool(gemini_key),
+        "gemini_api_key_masked": mask_api_key(gemini_key),
+        "groq_api_key_set": bool(groq_key),
+        "groq_api_key_masked": mask_api_key(groq_key),
+        "openrouter_api_key_set": bool(openrouter_key),
+        "openrouter_api_key_masked": mask_api_key(openrouter_key),
         # Models
         "ollama_model": db_settings.get("ollama_model", app_settings.ollama_model),
         "claude_model": db_settings.get("claude_model", app_settings.claude_model),
         "openai_model": db_settings.get("openai_model", app_settings.openai_model),
+        "gemini_model": db_settings.get("gemini_model", app_settings.gemini_model),
+        "groq_model": db_settings.get("groq_model", app_settings.groq_model),
+        "openrouter_model": db_settings.get("openrouter_model", app_settings.openrouter_model),
         # E-Mail
         "email_enabled": db_settings.get("email_enabled", "false") == "true",
         "imap_host": db_settings.get("imap_host", ""),
@@ -95,6 +127,11 @@ async def get_settings(db: AsyncSession = Depends(get_db)):
         "smtp_user": db_settings.get("smtp_user", ""),
         "smtp_password_set": bool(db_settings.get("smtp_password", "")),
         "smtp_from": db_settings.get("smtp_from", ""),
+        # Telegram / Discord
+        "telegram_enabled": db_settings.get("telegram_enabled", "false") == "true",
+        "telegram_bot_token_set": bool(telegram_token),
+        "discord_enabled": db_settings.get("discord_enabled", "false") == "true",
+        "discord_bot_token_set": bool(discord_token),
         # Language
         "language": db_settings.get("language", "de"),
     }

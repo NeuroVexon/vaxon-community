@@ -26,6 +26,7 @@
 <p align="center">
   <a href="#-features">Features</a> •
   <a href="#-schnellstart">Schnellstart</a> •
+  <a href="#cli">CLI</a> •
   <a href="#-dokumentation">Docs</a> •
   <a href="#-contributing">Contributing</a> •
   <a href="#-lizenz">Lizenz</a>
@@ -62,6 +63,7 @@
 | **Messenger Integration** | Telegram und Discord Bots mit Inline-Approval |
 | **Verschlüsselte API-Keys** | Fernet-Verschlüsselung in der DB |
 | **Chat mit Streaming** | SSE-basiertes Streaming mit Konversationshistorie |
+| **CLI** | Terminal-Steuerung mit SSE-Streaming, Pipe-Support und Scripting |
 | **Docker Deployment** | One-Command Setup |
 | **DSGVO-konform** | On-Premise, keine externe Datenübertragung |
 | **Dark Theme** | Modernes UI mit Cyan-Akzenten |
@@ -76,6 +78,7 @@
 | Persistentes Memory | Ja (DB-basiert) | Nein | Nein |
 | Skills/Plugins | Ja, mit Sicherheits-Gate | Ja, ohne Gate | Nein |
 | Messenger-Bots | Telegram + Discord | Nein | Nein |
+| CLI / Terminal | Ja (Pipe, Scripting) | Nein | Nein |
 | Open Source | Apache 2.0 | Proprietär | Variiert |
 | DSGVO-konform | Ja | Nein | Variiert |
 
@@ -124,6 +127,71 @@ npm install
 npm start
 ```
 </details>
+
+## CLI
+
+Axon bietet eine vollwertige CLI fuer Power-User — SSE-Streaming, Tool-Approval und Pipe-Support direkt im Terminal.
+
+### Installation
+
+```bash
+# Option 1: pip install (empfohlen)
+pip install -e ./cli
+axon chat "Hallo"
+
+# Option 2: Direkt ausfuehren
+python cli/axon_cli.py chat "Hallo"
+```
+
+### Konfiguration
+
+```bash
+axon config set url http://localhost:8000   # Server-URL
+axon config set auth user:password          # Basic Auth (optional)
+axon config set language de                 # Sprache: de / en
+axon config show                            # Aktuelle Config anzeigen
+```
+
+### Commands
+
+```bash
+# Chat (SSE-Streaming mit Live-Ausgabe)
+axon chat "Nachricht"                       # Einzelne Nachricht
+axon chat --agent Recherche "Nachricht"     # Mit spezifischem Agent
+axon chat --session <id> "Nachricht"        # Session fortsetzen
+cat datei.txt | axon chat                   # Pipe-Support
+
+# Interaktiver Modus
+axon                                        # REPL starten
+
+# Agents
+axon agents                                 # Alle Agents auflisten
+axon agents show <name>                     # Agent-Details
+
+# Memory
+axon memory list                            # Alle Memories
+axon memory search "query"                  # Memory durchsuchen
+axon memory add "key" "content"             # Memory hinzufuegen
+axon memory delete <id>                     # Memory loeschen
+
+# System
+axon status                                 # Health Check + Dashboard-Stats
+axon version                                # CLI + Server Version
+```
+
+### Tool-Approval
+
+Wenn der Agent ein Tool nutzen will, erscheint ein Approval-Prompt:
+
+```
+╭─ Tool-Anfrage ───────────────────────────╮
+│ Tool:   web_search                       │
+│ Risiko: niedrig                          │
+│                                          │
+│   query: Python Tutorials                │
+╰──────────────────────────────────────────╯
+[A]llow  [S]ession  [R]eject  > a
+```
 
 ## Verfügbare Tools
 

@@ -238,11 +238,14 @@ Siehe [docs/CONFIGURATION.md](docs/CONFIGURATION.md) für alle Optionen.
 
 - [Installation](docs/INSTALLATION.md)
 - [Konfiguration](docs/CONFIGURATION.md)
+- [CLI](docs/CLI.md)
 - [Tools](docs/TOOLS.md)
 - [Skills](docs/SKILLS.md)
 - [Messenger Integration](docs/MESSENGER.md)
 - [Security](SECURITY.md)
 - [API Reference](docs/API.md)
+- [Changelog](CHANGELOG.md)
+- [Drittlizenzen](THIRD_PARTY_LICENSES.md)
 
 ## Sicherheit
 

@@ -136,10 +136,10 @@ CLI_STRINGS = {
 }
 
 
-def s(key: str, **kwargs) -> str:
+def s(msg_key: str, **kwargs) -> str:
     """Get translated string for current language."""
     lang = load_config().get("language", "de")
-    text = CLI_STRINGS.get(lang, CLI_STRINGS["de"]).get(key, key)
+    text = CLI_STRINGS.get(lang, CLI_STRINGS["de"]).get(msg_key, msg_key)
     if kwargs:
         text = text.format(**kwargs)
     return text
@@ -223,6 +223,18 @@ def _api_get(path: str, params: Optional[dict] = None) -> dict:
     except httpx.ConnectError as e:
         err_console.print(f"[red]{s('connection_error', error=str(e))}[/red]")
         raise typer.Exit(1)
+
+
+def _api_get_safe(path: str, params: Optional[dict] = None) -> Optional[dict]:
+    """GET request that returns None on any error instead of exiting."""
+    try:
+        with _client() as client:
+            resp = client.get(f"/api/v1{path}", params=params)
+            if resp.status_code >= 400:
+                return None
+            return resp.json()
+    except Exception:
+        return None
 
 
 def _api_post(path: str, json_data: Optional[dict] = None) -> dict:
@@ -764,13 +776,8 @@ def status():
         health_ok = False
         health = {}
 
-    # Analytics (optional, may fail)
-    stats = None
-    if health_ok:
-        try:
-            stats = _api_get("/analytics/overview")
-        except SystemExit:
-            pass
+    # Analytics (optional, endpoint may not exist on older servers)
+    stats = _api_get_safe("/analytics/overview") if health_ok else None
 
     lines = []
     if health_ok:
@@ -783,7 +790,12 @@ def status():
             lines.append("")
             lines.append("[bold]LLM Provider:[/bold]")
             for name, info in providers.items():
-                status_str = info if isinstance(info, str) else info.get("status", "?")
+                if isinstance(info, bool):
+                    status_str = "available" if info else "unavailable"
+                elif isinstance(info, dict):
+                    status_str = info.get("status", "?")
+                else:
+                    status_str = str(info)
                 color = "green" if status_str == "available" else "red"
                 lines.append(f"  [{color}]{name}: {status_str}[/{color}]")
     else:

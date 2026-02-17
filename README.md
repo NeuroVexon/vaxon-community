@@ -301,7 +301,7 @@ Für erweiterte Anforderungen bietet NeuroVexon:
 
 - [GitHub Discussions](https://github.com/neurovexon/axon-community/discussions)
 - [GitHub Issues](https://github.com/neurovexon/axon-community/issues)
-- Email: support@neurovexon.de
+- Email: service@neurovexon.com
 
 ## Star History
 

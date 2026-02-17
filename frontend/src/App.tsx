@@ -64,6 +64,13 @@ function SettingsView() {
   const [saved, setSaved] = useState(false)
   const [provider, setProvider] = useState('')
   const [systemPrompt, setSystemPrompt] = useState('')
+  // Models
+  const [ollamaModel, setOllamaModel] = useState('')
+  const [claudeModel, setClaudeModel] = useState('')
+  const [openaiModel, setOpenaiModel] = useState('')
+  const [geminiModel, setGeminiModel] = useState('')
+  const [groqModel, setGroqModel] = useState('')
+  const [openrouterModel, setOpenrouterModel] = useState('')
   const [anthropicKey, setAnthropicKey] = useState('')
   const [openaiKey, setOpenaiKey] = useState('')
   const [geminiKey, setGeminiKey] = useState('')
@@ -104,6 +111,13 @@ function SettingsView() {
       setSettings(data)
       setProvider(data.llm_provider)
       setSystemPrompt(data.system_prompt || '')
+      // Models
+      setOllamaModel(data.ollama_model || '')
+      setClaudeModel(data.claude_model || '')
+      setOpenaiModel(data.openai_model || '')
+      setGeminiModel(data.gemini_model || '')
+      setGroqModel(data.groq_model || '')
+      setOpenrouterModel(data.openrouter_model || '')
       // E-Mail
       setEmailEnabled(data.email_enabled || false)
       setImapHost(data.imap_host || '')
@@ -129,6 +143,12 @@ function SettingsView() {
       const updates: Record<string, string> = {
         llm_provider: provider,
         system_prompt: systemPrompt,
+        ollama_model: ollamaModel,
+        claude_model: claudeModel,
+        openai_model: openaiModel,
+        gemini_model: geminiModel,
+        groq_model: groqModel,
+        openrouter_model: openrouterModel,
         email_enabled: emailEnabled ? 'true' : 'false',
         imap_host: imapHost,
         imap_port: imapPort,
@@ -215,6 +235,35 @@ function SettingsView() {
               {provider === 'groq' && t('settings.providerGroq')}
               {provider === 'openrouter' && t('settings.providerOpenrouter')}
             </p>
+
+            {/* Model Input */}
+            <div className="mt-4">
+              <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1">{t('agents.model')}</label>
+              {provider === 'ollama' && (
+                <input type="text" value={ollamaModel} onChange={(e) => setOllamaModel(e.target.value)}
+                  placeholder="llama3.1:8b" className="w-full px-3 py-2 bg-nv-black border border-nv-gray-light rounded-lg text-white text-sm font-mono placeholder-gray-500 focus:outline-none focus:border-nv-accent" />
+              )}
+              {provider === 'claude' && (
+                <input type="text" value={claudeModel} onChange={(e) => setClaudeModel(e.target.value)}
+                  placeholder="claude-sonnet-4-20250514" className="w-full px-3 py-2 bg-nv-black border border-nv-gray-light rounded-lg text-white text-sm font-mono placeholder-gray-500 focus:outline-none focus:border-nv-accent" />
+              )}
+              {provider === 'openai' && (
+                <input type="text" value={openaiModel} onChange={(e) => setOpenaiModel(e.target.value)}
+                  placeholder="gpt-4o" className="w-full px-3 py-2 bg-nv-black border border-nv-gray-light rounded-lg text-white text-sm font-mono placeholder-gray-500 focus:outline-none focus:border-nv-accent" />
+              )}
+              {provider === 'gemini' && (
+                <input type="text" value={geminiModel} onChange={(e) => setGeminiModel(e.target.value)}
+                  placeholder="gemini-2.0-flash" className="w-full px-3 py-2 bg-nv-black border border-nv-gray-light rounded-lg text-white text-sm font-mono placeholder-gray-500 focus:outline-none focus:border-nv-accent" />
+              )}
+              {provider === 'groq' && (
+                <input type="text" value={groqModel} onChange={(e) => setGroqModel(e.target.value)}
+                  placeholder="llama-3.3-70b-versatile" className="w-full px-3 py-2 bg-nv-black border border-nv-gray-light rounded-lg text-white text-sm font-mono placeholder-gray-500 focus:outline-none focus:border-nv-accent" />
+              )}
+              {provider === 'openrouter' && (
+                <input type="text" value={openrouterModel} onChange={(e) => setOpenrouterModel(e.target.value)}
+                  placeholder="anthropic/claude-sonnet-4" className="w-full px-3 py-2 bg-nv-black border border-nv-gray-light rounded-lg text-white text-sm font-mono placeholder-gray-500 focus:outline-none focus:border-nv-accent" />
+              )}
+            </div>
           </div>
 
           {/* Claude API Key */}

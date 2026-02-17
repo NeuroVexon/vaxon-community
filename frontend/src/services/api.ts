@@ -51,10 +51,19 @@ interface Settings {
   anthropic_api_key_masked?: string
   openai_api_key_set?: boolean
   openai_api_key_masked?: string
+  gemini_api_key_set?: boolean
+  gemini_api_key_masked?: string
+  groq_api_key_set?: boolean
+  groq_api_key_masked?: string
+  openrouter_api_key_set?: boolean
+  openrouter_api_key_masked?: string
   // Models
   ollama_model?: string
   claude_model?: string
   openai_model?: string
+  gemini_model?: string
+  groq_model?: string
+  openrouter_model?: string
   // E-Mail
   email_enabled?: boolean
   imap_host?: string
@@ -66,6 +75,12 @@ interface Settings {
   smtp_user?: string
   smtp_password_set?: boolean
   smtp_from?: string
+  // Telegram / Discord
+  telegram_enabled?: boolean
+  telegram_bot_token_set?: boolean
+  discord_enabled?: boolean
+  discord_bot_token_set?: boolean
+  // Language
   language?: string
 }
 

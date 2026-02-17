@@ -36,7 +36,7 @@ class WorkflowEngine:
         """Pruefen ob eine Nachricht einen Workflow-Trigger enthaelt"""
         result = await self.db.execute(
             select(Workflow).where(
-                Workflow.enabled == True,
+                Workflow.enabled,
                 Workflow.trigger_phrase.isnot(None)
             )
         )

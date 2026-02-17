@@ -8,8 +8,7 @@ import pytest
 from datetime import datetime
 
 from db.models import (
-    Conversation, Message, AuditLog, Memory, Agent, Skill,
-    ScheduledTask, Workflow, WorkflowRun, UploadedDocument, Settings,
+    Conversation, Message, AuditLog, Memory, Agent, ScheduledTask, Workflow, Settings,
     generate_uuid,
 )
 

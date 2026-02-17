@@ -18,7 +18,7 @@ from llm.provider import ChatMessage
 from agent.orchestrator import AgentOrchestrator
 from agent.memory import MemoryManager
 from agent.agent_manager import AgentManager
-from agent.permission_manager import permission_manager, PermissionScope
+from agent.permission_manager import PermissionScope
 from sqlalchemy import select
 from core.config import LLMProvider
 from core.security import decrypt_value

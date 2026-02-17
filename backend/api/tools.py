@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 from db.database import get_db
-from agent.tool_registry import tool_registry, RiskLevel
+from agent.tool_registry import tool_registry
 from agent.permission_manager import permission_manager, PermissionScope
 from agent.audit_logger import AuditLogger, AuditEventType
 

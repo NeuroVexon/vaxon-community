@@ -221,6 +221,6 @@ class SkillLoader:
     async def get_approved_skills(self) -> list[Skill]:
         """Gibt alle genehmigten und aktiven Skills zurück"""
         result = await self.db.execute(
-            select(Skill).where(Skill.approved == True, Skill.enabled == True)
+            select(Skill).where(Skill.approved, Skill.enabled)
         )
         return list(result.scalars().all())

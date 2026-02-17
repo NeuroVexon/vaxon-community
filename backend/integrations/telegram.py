@@ -13,7 +13,6 @@ Start:
     python -m integrations.telegram
 """
 
-import asyncio
 import json
 import logging
 import sys
@@ -41,7 +40,7 @@ except ImportError:
     HAS_TELEGRAM = False
 
 
-from core.i18n import t
+from core.i18n import t  # noqa: E402
 
 
 # --- In-Memory State ---
@@ -324,7 +323,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         import httpx
 
         async with httpx.AsyncClient(timeout=30.0) as client:
-            resp = await client.post(
+            await client.post(
                 f"http://localhost:8000/api/v1/chat/approve/{approval_id}?decision={decision}"
             )
 

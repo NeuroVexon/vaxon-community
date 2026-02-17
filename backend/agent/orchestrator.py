@@ -12,10 +12,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .tool_registry import ToolRegistry, tool_registry
 from .permission_manager import PermissionManager, permission_manager, PermissionScope
-from .audit_logger import AuditLogger, AuditEventType
+from .audit_logger import AuditLogger
 from .tool_handlers import execute_tool, ToolExecutionError
 from .agent_manager import AgentManager
-from llm.provider import BaseLLMProvider, ChatMessage, LLMResponse
+from llm.provider import BaseLLMProvider, ChatMessage
 from db.models import Agent
 from core.i18n import t
 

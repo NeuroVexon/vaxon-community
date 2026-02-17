@@ -14,7 +14,6 @@ Start:
     python -m integrations.discord
 """
 
-import asyncio
 import json
 import logging
 import sys
@@ -29,13 +28,13 @@ logger = logging.getLogger(__name__)
 try:
     import discord
     from discord.ext import commands
-    from discord import ui, app_commands
+    from discord import ui, app_commands  # noqa: F401
     HAS_DISCORD = True
 except ImportError:
     HAS_DISCORD = False
 
 
-from core.i18n import t
+from core.i18n import t  # noqa: E402
 
 
 # --- In-Memory State ---

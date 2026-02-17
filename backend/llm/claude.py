@@ -144,7 +144,7 @@ class ClaudeProvider(BaseLLMProvider):
         if not self.api_key:
             return False
         try:
-            client = self._get_client()
+            self._get_client()
             # Simple validation - try to create a minimal request
             return True
         except Exception as e:

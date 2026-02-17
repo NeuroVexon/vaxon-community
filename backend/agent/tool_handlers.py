@@ -288,7 +288,7 @@ async def handle_memory_save(params: dict) -> str:
         raise ToolExecutionError("Memory tools require a database session")
 
     manager = MemoryManager(db_session)
-    memory = await manager.add(key=key, content=content, source="agent", category=category)
+    await manager.add(key=key, content=content, source="agent", category=category)
     await db_session.commit()
     return t("tool.memory_saved", key=key, content=content[:100])
 

@@ -89,7 +89,7 @@ async def create_task(data: TaskCreate, db: AsyncSession = Depends(get_db)):
     """Neuen Task erstellen"""
     # Safety: Max Tasks
     result = await db.execute(
-        select(ScheduledTask).where(ScheduledTask.enabled == True)
+        select(ScheduledTask).where(ScheduledTask.enabled)
     )
     active_count = len(result.scalars().all())
     if active_count >= MAX_ACTIVE_TASKS:

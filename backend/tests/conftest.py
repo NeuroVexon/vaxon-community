@@ -12,14 +12,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from db.database import Base
-from db.models import (
-    Conversation, Message, AuditLog, Memory, Agent, Skill,
-    ScheduledTask, Workflow, WorkflowRun, UploadedDocument, Settings
-)
 
 # Check if embeddings module exists (v2.0 with semantic search)
 try:
-    import agent.embeddings
+    import agent.embeddings  # noqa: F401
     HAS_EMBEDDINGS_MODULE = True
 except ImportError:
     HAS_EMBEDDINGS_MODULE = False

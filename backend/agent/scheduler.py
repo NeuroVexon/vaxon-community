@@ -8,13 +8,12 @@ Sicherheit: Max 10 aktive Tasks, Timeout 5 Min, max 1/min pro Task.
 import asyncio
 import logging
 from datetime import datetime
-from typing import Optional
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from sqlalchemy import select
 
-from db.models import ScheduledTask, Agent
+from db.models import ScheduledTask
 from llm.router import llm_router
 from llm.provider import ChatMessage
 from core.config import LLMProvider
@@ -55,7 +54,7 @@ class TaskScheduler:
 
         async with async_session() as db:
             result = await db.execute(
-                select(ScheduledTask).where(ScheduledTask.enabled == True)
+                select(ScheduledTask).where(ScheduledTask.enabled)
             )
             tasks = result.scalars().all()
 

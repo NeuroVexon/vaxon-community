@@ -4,9 +4,7 @@ Axon by NeuroVexon - Rate Limiter Tests
 Tests for the in-memory RateLimiter used for MCP and API protection.
 """
 
-import pytest
 from datetime import datetime, timedelta
-from unittest.mock import patch
 
 from core.security import RateLimiter
 

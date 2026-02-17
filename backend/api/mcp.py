@@ -5,7 +5,6 @@ SSE-Transport fuer das Model Context Protocol.
 Ermoeglicht externen AI-Clients (Claude Desktop, Cursor) AXON-Tools zu nutzen.
 """
 
-import json
 import logging
 import uuid
 from typing import Optional

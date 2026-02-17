@@ -5,11 +5,8 @@ Tests for MemoryManager: CRUD operations, search, prompt building, serialization
 """
 
 import pytest
-import struct
-from unittest.mock import AsyncMock, patch
 
-from agent.memory import MemoryManager, MAX_MEMORIES_IN_PROMPT, MAX_MEMORY_CONTENT_LENGTH
-from db.models import Memory
+from agent.memory import MemoryManager, MAX_MEMORY_CONTENT_LENGTH
 
 # Embedding serialization only available with v2.0 embeddings
 try:

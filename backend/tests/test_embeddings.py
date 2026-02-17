@@ -5,8 +5,6 @@ Tests for cosine_similarity and EmbeddingProvider behavior.
 """
 
 import pytest
-import math
-from unittest.mock import AsyncMock, patch, MagicMock
 
 try:
     from agent.embeddings import cosine_similarity, EmbeddingProvider

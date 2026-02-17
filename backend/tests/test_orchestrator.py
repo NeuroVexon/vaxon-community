@@ -16,7 +16,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from agent.orchestrator import AgentOrchestrator
 from agent.tool_registry import ToolRegistry, ToolDefinition, RiskLevel
 from agent.permission_manager import PermissionManager, PermissionScope
-from agent.audit_logger import AuditLogger
 from llm.provider import BaseLLMProvider, ChatMessage, ToolCall, LLMResponse
 from db.models import Agent
 
@@ -676,7 +675,7 @@ class TestOrchestratorIterations:
                 ChatMessage(role="user", content="Suche")
             ])
 
-        types = [e["type"] for e in events]
+        [e["type"] for e in events]
         # Partial text should be yielded
         text_events = [e for e in events if e["type"] == "text"]
         assert len(text_events) >= 1

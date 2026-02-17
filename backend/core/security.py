@@ -6,7 +6,6 @@ import base64
 import hashlib
 import logging
 import secrets
-from typing import Optional
 from datetime import datetime, timedelta
 
 from cryptography.fernet import Fernet

@@ -4,13 +4,13 @@ Axon by NeuroVexon - Dashboard & Analytics API
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, case
+from sqlalchemy import select, func
 from datetime import datetime, timedelta
 
 from db.database import get_db
 from db.models import (
     Conversation, Message, AuditLog, Agent, ScheduledTask,
-    Workflow, WorkflowRun, Skill
+    Workflow, Skill
 )
 
 router = APIRouter(prefix="/analytics", tags=["analytics"])
@@ -27,7 +27,7 @@ async def get_overview(db: AsyncSession = Depends(get_db)):
 
     # Agents
     agent_count = await db.scalar(
-        select(func.count(Agent.id)).where(Agent.enabled == True)
+        select(func.count(Agent.id)).where(Agent.enabled)
     )
 
     # Tool Calls (aus Audit)
@@ -52,17 +52,17 @@ async def get_overview(db: AsyncSession = Depends(get_db)):
 
     # Scheduled Tasks
     active_tasks = await db.scalar(
-        select(func.count(ScheduledTask.id)).where(ScheduledTask.enabled == True)
+        select(func.count(ScheduledTask.id)).where(ScheduledTask.enabled)
     )
 
     # Workflows
     workflow_count = await db.scalar(
-        select(func.count(Workflow.id)).where(Workflow.enabled == True)
+        select(func.count(Workflow.id)).where(Workflow.enabled)
     )
 
     # Skills
     active_skills = await db.scalar(
-        select(func.count(Skill.id)).where(Skill.enabled == True, Skill.approved == True)
+        select(func.count(Skill.id)).where(Skill.enabled, Skill.approved)
     )
 
     return {
@@ -176,7 +176,7 @@ async def get_timeline(days: int = 30, db: AsyncSession = Depends(get_db)):
 async def get_agent_stats(db: AsyncSession = Depends(get_db)):
     """Agent-Statistiken"""
     result = await db.execute(
-        select(Agent).where(Agent.enabled == True).order_by(Agent.is_default.desc())
+        select(Agent).where(Agent.enabled).order_by(Agent.is_default.desc())
     )
     agents = result.scalars().all()
 

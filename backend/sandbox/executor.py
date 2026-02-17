@@ -15,7 +15,6 @@ import logging
 import os
 import tempfile
 import time
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -109,7 +108,7 @@ async def build_sandbox_image() -> bool:
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
-        stdout, stderr = await proc.wait(), None
+        _stdout, _stderr = await proc.wait(), None
         return proc.returncode == 0
     except Exception as e:
         logger.error(f"Sandbox Image Build fehlgeschlagen: {e}")

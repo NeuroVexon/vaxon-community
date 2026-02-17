@@ -9,7 +9,6 @@ Supports tool calling via Gemini Function Calling.
 
 from typing import AsyncGenerator, Optional
 import logging
-import json
 
 from .provider import BaseLLMProvider, ChatMessage, LLMResponse, ToolCall
 
@@ -215,7 +214,7 @@ class GeminiProvider(BaseLLMProvider):
         try:
             client = self._get_client()
             # Simple validation request
-            result = await client.aio.models.list()
+            await client.aio.models.list()
             return True
         except Exception as e:
             logger.warning(f"Gemini health check failed: {e}")

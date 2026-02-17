@@ -109,7 +109,7 @@ class TestAgentEndpoints:
         assert response.status_code in [400, 403, 409, 200]
         if response.status_code == 200:
             # If returns 200 with error message
-            data = response.json()
+            response.json()
             # Default agent should still exist
             check = client.get(f"/api/v1/agents/{default['id']}")
             assert check.status_code == 200

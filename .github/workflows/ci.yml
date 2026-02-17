@@ -24,7 +24,7 @@ jobs:
           cd backend
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest pytest-asyncio ruff black
+          pip install pytest pytest-asyncio ruff black==25.11.0
 
       - name: Lint with Ruff
         run: |

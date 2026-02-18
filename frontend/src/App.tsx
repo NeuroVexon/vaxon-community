@@ -103,12 +103,14 @@ function SettingsView() {
   const [emailTesting, setEmailTesting] = useState(false)
 
   const handleDeleteKey = async (keyName: string) => {
-    if (!confirm(t('settings.deleteKeyConfirm'))) return
     try {
-      await api.deleteApiKey(keyName)
+      const result = await api.deleteApiKey(keyName)
+      console.log('Delete result:', result)
+      alert(t('settings.keyDeleted'))
       await loadSettings()
     } catch (error) {
       console.error('Failed to delete API key:', error)
+      alert('Error: ' + error)
     }
   }
 
@@ -279,7 +281,7 @@ function SettingsView() {
           </div>
 
           {/* Claude API Key */}
-          {provider === 'claude' && (
+          {(provider === 'claude' || settings?.anthropic_api_key_set) && (
             <div className="bg-nv-black-200 rounded-xl p-6 border border-nv-gray-light">
               <div className="flex items-center gap-2 mb-4">
                 <Key className="w-5 h-5 text-nv-accent" />
@@ -325,7 +327,7 @@ function SettingsView() {
           )}
 
           {/* OpenAI API Key */}
-          {provider === 'openai' && (
+          {(provider === 'openai' || settings?.openai_api_key_set) && (
             <div className="bg-nv-black-200 rounded-xl p-6 border border-nv-gray-light">
               <div className="flex items-center gap-2 mb-4">
                 <Key className="w-5 h-5 text-nv-accent" />
@@ -371,7 +373,7 @@ function SettingsView() {
           )}
 
           {/* Gemini API Key */}
-          {provider === 'gemini' && (
+          {(provider === 'gemini' || settings?.gemini_api_key_set) && (
             <div className="bg-nv-black-200 rounded-xl p-6 border border-nv-gray-light">
               <div className="flex items-center gap-2 mb-4">
                 <Key className="w-5 h-5 text-nv-accent" />
@@ -417,7 +419,7 @@ function SettingsView() {
           )}
 
           {/* Groq API Key */}
-          {provider === 'groq' && (
+          {(provider === 'groq' || settings?.groq_api_key_set) && (
             <div className="bg-nv-black-200 rounded-xl p-6 border border-nv-gray-light">
               <div className="flex items-center gap-2 mb-4">
                 <Key className="w-5 h-5 text-nv-accent" />
@@ -463,7 +465,7 @@ function SettingsView() {
           )}
 
           {/* OpenRouter API Key */}
-          {provider === 'openrouter' && (
+          {(provider === 'openrouter' || settings?.openrouter_api_key_set) && (
             <div className="bg-nv-black-200 rounded-xl p-6 border border-nv-gray-light">
               <div className="flex items-center gap-2 mb-4">
                 <Key className="w-5 h-5 text-nv-accent" />

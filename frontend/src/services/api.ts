@@ -328,6 +328,12 @@ export const api = {
     }
   },
 
+  async deleteApiKey(keyName: string): Promise<{ status: string; key: string }> {
+    const response = await fetch(`${API_BASE}/settings/api-key/${keyName}`, { method: 'DELETE' })
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+    return response.json()
+  },
+
   async testEmailConnection(): Promise<{
     imap: boolean
     smtp: boolean

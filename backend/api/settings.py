@@ -168,6 +168,35 @@ async def update_settings(update: SettingsUpdate, db: AsyncSession = Depends(get
     return {"status": "updated", "changes": updates}
 
 
+@router.delete("/api-key/{key_name}")
+async def delete_api_key(key_name: str, db: AsyncSession = Depends(get_db)):
+    """Delete a stored API key or token"""
+    allowed_keys = {
+        "anthropic_api_key",
+        "openai_api_key",
+        "gemini_api_key",
+        "groq_api_key",
+        "openrouter_api_key",
+        "telegram_bot_token",
+        "discord_bot_token",
+        "imap_password",
+        "smtp_password",
+        "mcp_auth_token",
+    }
+    if key_name not in allowed_keys:
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=400, detail=f"Invalid key: {key_name}")
+
+    result = await db.execute(select(Settings).where(Settings.key == key_name))
+    setting = result.scalar_one_or_none()
+    if setting:
+        await db.delete(setting)
+        await db.commit()
+        return {"status": "deleted", "key": key_name}
+    return {"status": "not_found", "key": key_name}
+
+
 @router.post("/email/test")
 async def test_email_connection(request: Request, db: AsyncSession = Depends(get_db)):
     """E-Mail Verbindung testen"""

@@ -11,7 +11,7 @@ import Dashboard from './components/Dashboard/Dashboard'
 import { ChatProvider } from './contexts/ChatContext'
 import { useChat } from './hooks/useChat'
 import { api } from './services/api'
-import { Settings as SettingsIcon, Save, Loader2, Check, Key, Eye, EyeOff, Mail, CheckCircle, XCircle, Globe, MessageCircle, Hash } from 'lucide-react'
+import { Settings as SettingsIcon, Save, Loader2, Check, Key, Eye, EyeOff, Mail, CheckCircle, XCircle, Globe, MessageCircle, Hash, Trash2 } from 'lucide-react'
 import clsx from 'clsx'
 import { useTranslation } from 'react-i18next'
 
@@ -101,6 +101,16 @@ function SettingsView() {
   const [smtpFrom, setSmtpFrom] = useState('')
   const [emailTestResult, setEmailTestResult] = useState<{ imap: boolean; smtp: boolean; imap_error?: string | null; smtp_error?: string | null } | null>(null)
   const [emailTesting, setEmailTesting] = useState(false)
+
+  const handleDeleteKey = async (keyName: string) => {
+    if (!confirm(t('settings.deleteKeyConfirm'))) return
+    try {
+      await api.deleteApiKey(keyName)
+      await loadSettings()
+    } catch (error) {
+      console.error('Failed to delete API key:', error)
+    }
+  }
 
   useEffect(() => {
     loadSettings()
@@ -276,9 +286,18 @@ function SettingsView() {
                 <h2 className="text-lg font-semibold">Anthropic API Key</h2>
               </div>
               {settings?.anthropic_api_key_set && (
-                <p className="text-sm text-green-400 mb-3">
-                  ✓ {t('settings.apiKeySet', { masked: settings.anthropic_api_key_masked })}
-                </p>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm text-green-400">
+                    ✓ {t('settings.apiKeySet', { masked: settings.anthropic_api_key_masked })}
+                  </p>
+                  <button
+                    onClick={() => handleDeleteKey('anthropic_api_key')}
+                    className="px-3 py-1 text-xs text-red-400 hover:text-red-300 hover:bg-red-400/10 border border-red-400/30 rounded-lg transition-all flex items-center gap-1"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                    {t('settings.deleteKey')}
+                  </button>
+                </div>
               )}
               <div className="relative">
                 <input
@@ -313,9 +332,18 @@ function SettingsView() {
                 <h2 className="text-lg font-semibold">OpenAI API Key</h2>
               </div>
               {settings?.openai_api_key_set && (
-                <p className="text-sm text-green-400 mb-3">
-                  ✓ {t('settings.apiKeySet', { masked: settings.openai_api_key_masked })}
-                </p>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm text-green-400">
+                    ✓ {t('settings.apiKeySet', { masked: settings.openai_api_key_masked })}
+                  </p>
+                  <button
+                    onClick={() => handleDeleteKey('openai_api_key')}
+                    className="px-3 py-1 text-xs text-red-400 hover:text-red-300 hover:bg-red-400/10 border border-red-400/30 rounded-lg transition-all flex items-center gap-1"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                    {t('settings.deleteKey')}
+                  </button>
+                </div>
               )}
               <div className="relative">
                 <input
@@ -350,9 +378,18 @@ function SettingsView() {
                 <h2 className="text-lg font-semibold">Google Gemini API Key</h2>
               </div>
               {settings?.gemini_api_key_set && (
-                <p className="text-sm text-green-400 mb-3">
-                  {t('settings.apiKeySet', { masked: settings.gemini_api_key_masked })}
-                </p>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm text-green-400">
+                    ✓ {t('settings.apiKeySet', { masked: settings.gemini_api_key_masked })}
+                  </p>
+                  <button
+                    onClick={() => handleDeleteKey('gemini_api_key')}
+                    className="px-3 py-1 text-xs text-red-400 hover:text-red-300 hover:bg-red-400/10 border border-red-400/30 rounded-lg transition-all flex items-center gap-1"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                    {t('settings.deleteKey')}
+                  </button>
+                </div>
               )}
               <div className="relative">
                 <input
@@ -387,9 +424,18 @@ function SettingsView() {
                 <h2 className="text-lg font-semibold">Groq API Key</h2>
               </div>
               {settings?.groq_api_key_set && (
-                <p className="text-sm text-green-400 mb-3">
-                  {t('settings.apiKeySet', { masked: settings.groq_api_key_masked })}
-                </p>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm text-green-400">
+                    ✓ {t('settings.apiKeySet', { masked: settings.groq_api_key_masked })}
+                  </p>
+                  <button
+                    onClick={() => handleDeleteKey('groq_api_key')}
+                    className="px-3 py-1 text-xs text-red-400 hover:text-red-300 hover:bg-red-400/10 border border-red-400/30 rounded-lg transition-all flex items-center gap-1"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                    {t('settings.deleteKey')}
+                  </button>
+                </div>
               )}
               <div className="relative">
                 <input
@@ -424,9 +470,18 @@ function SettingsView() {
                 <h2 className="text-lg font-semibold">OpenRouter API Key</h2>
               </div>
               {settings?.openrouter_api_key_set && (
-                <p className="text-sm text-green-400 mb-3">
-                  {t('settings.apiKeySet', { masked: settings.openrouter_api_key_masked })}
-                </p>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm text-green-400">
+                    ✓ {t('settings.apiKeySet', { masked: settings.openrouter_api_key_masked })}
+                  </p>
+                  <button
+                    onClick={() => handleDeleteKey('openrouter_api_key')}
+                    className="px-3 py-1 text-xs text-red-400 hover:text-red-300 hover:bg-red-400/10 border border-red-400/30 rounded-lg transition-all flex items-center gap-1"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                    {t('settings.deleteKey')}
+                  </button>
+                </div>
               )}
               <div className="relative">
                 <input

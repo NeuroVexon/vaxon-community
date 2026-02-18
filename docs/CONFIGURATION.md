@@ -1,75 +1,75 @@
-# Konfiguration
+# Configuration
 
-Detaillierte Konfigurationsoptionen für Axon.
+Detailed configuration options for Axon.
 
-## Umgebungsvariablen
+## Environment Variables
 
 ### App Settings
 
-| Variable | Standard | Beschreibung |
-|----------|----------|--------------|
-| `APP_NAME` | "Axon by NeuroVexon" | App-Name |
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `APP_NAME` | "Axon by NeuroVexon" | App name |
 | `APP_VERSION` | "1.0.0" | Version |
-| `DEBUG` | false | Debug-Modus |
+| `DEBUG` | false | Debug mode |
 
 ### Server
 
-| Variable | Standard | Beschreibung |
-|----------|----------|--------------|
-| `HOST` | "0.0.0.0" | Server-Host |
-| `PORT` | 8000 | Server-Port |
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `HOST` | "0.0.0.0" | Server host |
+| `PORT` | 8000 | Server port |
 
 ### Database
 
-| Variable | Standard | Beschreibung |
-|----------|----------|--------------|
-| `DATABASE_URL` | "sqlite+aiosqlite:///./axon.db" | Datenbank-URL |
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DATABASE_URL` | "sqlite+aiosqlite:///./axon.db" | Database URL |
 
 ### LLM Provider
 
-| Variable | Standard | Beschreibung |
-|----------|----------|--------------|
+| Variable | Default | Description |
+|----------|---------|-------------|
 | `LLM_PROVIDER` | "ollama" | Provider: ollama, claude, openai |
 
 ### Ollama
 
-| Variable | Standard | Beschreibung |
-|----------|----------|--------------|
+| Variable | Default | Description |
+|----------|---------|-------------|
 | `OLLAMA_BASE_URL` | "http://localhost:11434" | Ollama API URL |
-| `OLLAMA_MODEL` | "llama3.1:8b" | Modell |
+| `OLLAMA_MODEL` | "llama3.1:8b" | Model |
 
 ### Claude (Anthropic)
 
-| Variable | Standard | Beschreibung |
-|----------|----------|--------------|
+| Variable | Default | Description |
+|----------|---------|-------------|
 | `ANTHROPIC_API_KEY` | - | API Key |
-| `CLAUDE_MODEL` | "claude-sonnet-4-20250514" | Modell |
+| `CLAUDE_MODEL` | "claude-sonnet-4-20250514" | Model |
 
 ### OpenAI
 
-| Variable | Standard | Beschreibung |
-|----------|----------|--------------|
+| Variable | Default | Description |
+|----------|---------|-------------|
 | `OPENAI_API_KEY` | - | API Key |
-| `OPENAI_MODEL` | "gpt-4o" | Modell |
+| `OPENAI_MODEL` | "gpt-4o" | Model |
 
 ### Security
 
-| Variable | Standard | Beschreibung |
-|----------|----------|--------------|
-| `SECRET_KEY` | "change-me..." | Secret für Sessions (ÄNDERN!) |
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `SECRET_KEY` | "change-me..." | Secret for sessions (CHANGE THIS!) |
 
 ### Tool Execution
 
-| Variable | Standard | Beschreibung |
-|----------|----------|--------------|
-| `OUTPUTS_DIR` | "./outputs" | Output-Verzeichnis für file_write |
-| `MAX_FILE_SIZE_MB` | 10 | Max. Dateigröße zum Lesen |
-| `CODE_EXECUTION_TIMEOUT` | 30 | Timeout für Code in Sekunden |
-| `CODE_EXECUTION_MEMORY_MB` | 256 | Memory-Limit für Code |
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `OUTPUTS_DIR` | "./outputs" | Output directory for file_write |
+| `MAX_FILE_SIZE_MB` | 10 | Max file size for reading |
+| `CODE_EXECUTION_TIMEOUT` | 30 | Timeout for code in seconds |
+| `CODE_EXECUTION_MEMORY_MB` | 256 | Memory limit for code |
 
 ## Shell Whitelist
 
-Die erlaubten Shell-Commands können in `backend/core/config.py` angepasst werden:
+The allowed shell commands can be customized in `backend/core/config.py`:
 
 ```python
 shell_whitelist: list[str] = [
@@ -81,40 +81,40 @@ shell_whitelist: list[str] = [
 ]
 ```
 
-## Modelle
+## Models
 
-### Empfohlene Ollama Modelle
+### Recommended Ollama Models
 
-| Modell | RAM | Beschreibung |
-|--------|-----|--------------|
-| `llama3.1:8b` | 8GB | Gute Balance |
-| `llama3.1:70b` | 48GB | Beste Qualität |
-| `mistral:7b` | 8GB | Schnell |
-| `codellama:13b` | 16GB | Gut für Code |
-| `mixtral:8x7b` | 32GB | MoE, sehr gut |
+| Model | RAM | Description |
+|-------|-----|-------------|
+| `llama3.1:8b` | 8GB | Good balance |
+| `llama3.1:70b` | 48GB | Best quality |
+| `mistral:7b` | 8GB | Fast |
+| `codellama:13b` | 16GB | Good for code |
+| `mixtral:8x7b` | 32GB | MoE, very good |
 
 ```bash
-# Modell installieren
+# Install model
 ollama pull llama3.1:8b
 
-# In .env setzen
+# Set in .env
 OLLAMA_MODEL=llama3.1:8b
 ```
 
-### Claude Modelle
+### Claude Models
 
-| Modell | Beschreibung |
-|--------|--------------|
-| `claude-sonnet-4-20250514` | Empfohlen |
-| `claude-opus-4-20250514` | Beste Qualität |
+| Model | Description |
+|-------|-------------|
+| `claude-sonnet-4-20250514` | Recommended |
+| `claude-opus-4-20250514` | Best quality |
 
-### OpenAI Modelle
+### OpenAI Models
 
-| Modell | Beschreibung |
-|--------|--------------|
-| `gpt-4o` | Empfohlen |
-| `gpt-4-turbo` | Schneller |
-| `gpt-3.5-turbo` | Günstig |
+| Model | Description |
+|-------|-------------|
+| `gpt-4o` | Recommended |
+| `gpt-4-turbo` | Faster |
+| `gpt-3.5-turbo` | Budget-friendly |
 
 ## Production Setup
 
@@ -176,10 +176,10 @@ WantedBy=multi-user.target
 
 ### Production Checklist
 
-- [ ] `SECRET_KEY` geändert
+- [ ] `SECRET_KEY` changed
 - [ ] `DEBUG=false`
-- [ ] HTTPS aktiviert
-- [ ] Firewall konfiguriert
-- [ ] Backup eingerichtet
-- [ ] Monitoring eingerichtet
-- [ ] Log-Rotation konfiguriert
+- [ ] HTTPS enabled
+- [ ] Firewall configured
+- [ ] Backup set up
+- [ ] Monitoring set up
+- [ ] Log rotation configured

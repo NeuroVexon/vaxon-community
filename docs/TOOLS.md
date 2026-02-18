@@ -1,119 +1,119 @@
 # Tools
 
-Axon bietet verschiedene Tools, die die KI verwenden kann. Jedes Tool erfordert explizite Benutzer-Genehmigung.
+Axon offers various tools that the AI can use. Each tool requires explicit user approval.
 
-## Übersicht
+## Overview
 
-| Tool | Beschreibung | Risiko |
-|------|--------------|--------|
-| `file_read` | Datei lesen | Mittel |
-| `file_write` | Datei schreiben | Mittel |
-| `file_list` | Verzeichnis auflisten | Niedrig |
-| `web_fetch` | URL abrufen | Mittel |
-| `web_search` | Web-Suche | Niedrig |
-| `shell_execute` | Shell-Command | Hoch |
-| `memory_save` | Fakt im Gedächtnis speichern | Niedrig |
-| `memory_search` | Gedächtnis durchsuchen | Niedrig |
-| `memory_delete` | Eintrag aus Gedächtnis löschen | Niedrig |
+| Tool | Description | Risk |
+|------|-------------|------|
+| `file_read` | Read a file | Medium |
+| `file_write` | Write a file | Medium |
+| `file_list` | List a directory | Low |
+| `web_fetch` | Fetch a URL | Medium |
+| `web_search` | Web search | Low |
+| `shell_execute` | Shell command | High |
+| `memory_save` | Save a fact to memory | Low |
+| `memory_search` | Search memory | Low |
+| `memory_delete` | Delete an entry from memory | Low |
 
 ## File Tools
 
 ### file_read
 
-Liest den Inhalt einer Datei.
+Reads the content of a file.
 
-**Parameter:**
-- `path` (string, required): Dateipfad
-- `encoding` (string, optional): Encoding (Standard: utf-8)
+**Parameters:**
+- `path` (string, required): File path
+- `encoding` (string, optional): Encoding (default: utf-8)
 
-**Einschränkungen:**
-- Max. Dateigröße: 10MB (konfigurierbar)
-- Blockierte Pfade: `/etc/passwd`, `/etc/shadow`, System-Verzeichnisse
+**Restrictions:**
+- Max file size: 10MB (configurable)
+- Blocked paths: `/etc/passwd`, `/etc/shadow`, system directories
 
-**Beispiel:**
+**Example:**
 ```
-Lies die Datei config.json
+Read the file config.json
 ```
 
 ### file_write
 
-Schreibt Inhalt in eine Datei.
+Writes content to a file.
 
-**Parameter:**
-- `filename` (string, required): Dateiname (wird in /outputs/ gespeichert)
-- `content` (string, required): Zu schreibender Inhalt
+**Parameters:**
+- `filename` (string, required): Filename (saved in /outputs/)
+- `content` (string, required): Content to write
 
-**Einschränkungen:**
-- Dateien werden NUR in `/outputs/` gespeichert
-- Pfad-Traversal wird blockiert
+**Restrictions:**
+- Files are ONLY saved in `/outputs/`
+- Path traversal is blocked
 
-**Beispiel:**
+**Example:**
 ```
-Erstelle eine Datei namens ergebnis.txt mit dem Inhalt "Hallo Welt"
+Create a file named result.txt with the content "Hello World"
 ```
 
 ### file_list
 
-Listet Dateien in einem Verzeichnis auf.
+Lists files in a directory.
 
-**Parameter:**
-- `path` (string, required): Verzeichnispfad
-- `recursive` (boolean, optional): Rekursiv auflisten (Standard: false)
+**Parameters:**
+- `path` (string, required): Directory path
+- `recursive` (boolean, optional): List recursively (default: false)
 
-**Einschränkungen:**
-- Max. 100 Einträge bei rekursiver Auflistung
+**Restrictions:**
+- Max 100 entries for recursive listing
 
-**Beispiel:**
+**Example:**
 ```
-Liste alle Dateien im aktuellen Ordner
+List all files in the current directory
 ```
 
 ## Web Tools
 
 ### web_fetch
 
-Ruft Inhalte von einer URL ab.
+Fetches content from a URL.
 
-**Parameter:**
+**Parameters:**
 - `url` (string, required): URL
-- `method` (string, optional): HTTP-Methode (Standard: GET)
+- `method` (string, optional): HTTP method (default: GET)
 
-**Einschränkungen:**
-- Blockierte Hosts: localhost, 127.0.0.1, interne IPs
-- Timeout: 30 Sekunden
-- Max. Response: 10.000 Zeichen
+**Restrictions:**
+- Blocked hosts: localhost, 127.0.0.1, internal IPs
+- Timeout: 30 seconds
+- Max response: 10,000 characters
 
-**Beispiel:**
+**Example:**
 ```
-Rufe die Seite https://example.com ab
+Fetch the page https://example.com
 ```
 
 ### web_search
 
-Durchsucht das Web mit DuckDuckGo.
+Searches the web using DuckDuckGo.
 
-**Parameter:**
-- `query` (string, required): Suchbegriff
-- `max_results` (integer, optional): Max. Ergebnisse (Standard: 5)
+**Parameters:**
+- `query` (string, required): Search term
+- `max_results` (integer, optional): Max results (default: 5)
 
-**Beispiel:**
+**Example:**
 ```
-Suche im Web nach "Python FastAPI Tutorial"
+Search the web for "Python FastAPI Tutorial"
 ```
 
 ## Shell Tools
 
 ### shell_execute
 
-Führt einen Shell-Befehl aus.
+Executes a shell command.
 
-**Parameter:**
-- `command` (string, required): Auszuführender Befehl
+**Parameters:**
+- `command` (string, required): Command to execute
 
-**Einschränkungen:**
-- NUR Whitelist-Commands erlaubt
-- Timeout: 30 Sekunden
-- Output max. 5.000 Zeichen
+**Restrictions:**
+- ONLY whitelisted commands allowed
+- Timeout: 30 seconds
+- Output max 5,000 characters
 
 **Whitelist:**
 ```
@@ -123,85 +123,88 @@ python --version, node --version,
 pip list, npm list
 ```
 
-**Beispiel:**
+**Example:**
 ```
-Führe "ls -la" aus
+Run "ls -la"
 ```
 
-## Risiko-Level
+## Risk Levels
 
-### Niedrig (Low)
+### Low
+
 - file_list
 - web_search
 
-Diese Tools lesen nur Informationen und können keine Änderungen vornehmen.
+These tools only read information and cannot make changes.
 
-### Mittel (Medium)
+### Medium
+
 - file_read
 - file_write
 - web_fetch
 
-Diese Tools können Daten lesen oder schreiben, aber nur in kontrollierten Bereichen.
+These tools can read or write data, but only in controlled areas.
 
-### Hoch (High)
+### High
+
 - shell_execute
 
-Dieses Tool kann potenziell gefährliche Aktionen ausführen. Trotz Whitelist sollte es mit Vorsicht genehmigt werden.
+This tool can potentially perform dangerous actions. Despite the whitelist, it should be approved with caution.
 
-## Genehmigungsoptionen
+## Approval Options
 
-Wenn ein Tool Genehmigung anfordert:
+When a tool requests approval:
 
-1. **Einmal erlauben**: Nur diese eine Ausführung
-2. **Für Session erlauben**: Für die gesamte Chat-Session
-3. **Ablehnen**: Tool wird nicht ausgeführt
-4. **Nie erlauben**: Tool wird dauerhaft blockiert (für diese Session)
+1. **Allow once**: Only this single execution
+2. **Allow for session**: For the entire chat session
+3. **Reject**: Tool will not be executed
+4. **Never allow**: Tool is permanently blocked (for this session)
 
 ## Memory Tools
 
 ### memory_save
 
-Speichert einen Fakt im persistenten Langzeitgedächtnis.
+Saves a fact to the persistent long-term memory.
 
-**Parameter:**
-- `key` (string, required): Kurzform / Thema
-- `content` (string, required): Der eigentliche Fakt
-- `category` (string, optional): Kategorie (z.B. "Präferenz", "Projekt")
+**Parameters:**
+- `key` (string, required): Short form / topic
+- `content` (string, required): The actual fact
+- `category` (string, optional): Category (e.g., "Preference", "Project")
 
-**Kein Approval erforderlich** — Memory-Tools haben niedriges Risiko.
+**No approval required** — Memory tools have low risk.
 
-**Beispiel:**
+**Example:**
 ```
-Merk dir, dass ich Python bevorzuge
+Remember that I prefer Python
 ```
 
 ### memory_search
 
-Durchsucht das Langzeitgedächtnis nach relevanten Fakten.
+Searches the long-term memory for relevant facts.
 
-**Parameter:**
-- `query` (string, required): Suchbegriff
+**Parameters:**
+- `query` (string, required): Search term
 
-**Beispiel:**
+**Example:**
 ```
-Was weißt du über meine Programmiersprache?
+What do you know about my programming language?
 ```
 
 ### memory_delete
 
-Löscht einen Eintrag aus dem Gedächtnis.
+Deletes an entry from memory.
 
-**Parameter:**
-- `key` (string, required): Der Key der zu löschenden Erinnerung
+**Parameters:**
+- `key` (string, required): The key of the memory to delete
 
-**Beispiel:**
+**Example:**
 ```
-Vergiss meine Lieblingsprogrammiersprache
+Forget my favorite programming language
 ```
 
 ## Custom Tools
 
-Custom Tools können in `backend/agent/tool_registry.py` hinzugefügt werden:
+Custom tools can be added in `backend/agent/tool_registry.py`:
 
 ```python
 self.register(ToolDefinition(
@@ -216,12 +219,12 @@ self.register(ToolDefinition(
 ))
 ```
 
-Und der Handler in `backend/agent/tool_handlers.py`:
+And the handler in `backend/agent/tool_handlers.py`:
 
 ```python
 async def handle_my_custom_tool(params: dict) -> str:
     param1 = params.get("param1")
     param2 = params.get("param2", 10)
-    # Implementierung
+    # Implementation
     return result
 ```

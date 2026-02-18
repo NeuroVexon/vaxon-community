@@ -1,48 +1,48 @@
 ---
 name: Bug Report
-about: Melde einen Bug, um Axon zu verbessern
+about: Report a bug to help improve Axon
 title: '[BUG] '
 labels: bug
 assignees: ''
 ---
 
-## Beschreibung
+## Description
 
-Eine klare Beschreibung des Bugs.
+A clear description of the bug.
 
-## Schritte zur Reproduktion
+## Steps to Reproduce
 
-1. Gehe zu '...'
-2. Klicke auf '...'
-3. Scrolle zu '...'
-4. Siehe Fehler
+1. Go to '...'
+2. Click on '...'
+3. Scroll to '...'
+4. See error
 
-## Erwartetes Verhalten
+## Expected Behavior
 
-Was hättest du erwartet?
+What did you expect to happen?
 
-## Tatsächliches Verhalten
+## Actual Behavior
 
-Was ist stattdessen passiert?
+What happened instead?
 
 ## Screenshots
 
-Falls möglich, füge Screenshots hinzu.
+If possible, add screenshots.
 
-## Umgebung
+## Environment
 
-- **OS**: [z.B. Windows 11, Ubuntu 22.04, macOS 14]
-- **Browser**: [z.B. Chrome 120, Firefox 121]
-- **Axon Version**: [z.B. 1.0.0]
-- **LLM Provider**: [z.B. Ollama, Claude, OpenAI]
-- **Docker**: [Ja/Nein]
+- **OS**: [e.g. Windows 11, Ubuntu 22.04, macOS 14]
+- **Browser**: [e.g. Chrome 120, Firefox 121]
+- **Axon Version**: [e.g. 1.0.0]
+- **LLM Provider**: [e.g. Ollama, Claude, OpenAI]
+- **Docker**: [Yes/No]
 
 ## Logs
 
 ```
-Füge relevante Logs hier ein
+Paste relevant logs here
 ```
 
-## Zusätzlicher Kontext
+## Additional Context
 
-Weitere Informationen zum Problem.
+Any additional information about the problem.

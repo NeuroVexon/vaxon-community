@@ -1,8 +1,8 @@
 # Axon — Testing
 
-Axon nutzt **pytest** mit pytest-asyncio fuer automatisierte Tests.
+Axon uses **pytest** with pytest-asyncio for automated tests.
 
-## Schnellstart
+## Quick Start
 
 ```bash
 cd backend
@@ -10,52 +10,52 @@ pip install pytest pytest-asyncio
 pytest tests/ -v
 ```
 
-## Test-Kategorien
+## Test Categories
 
-### Unit Tests (lokal ausfuehrbar, keine externen Dependencies)
+### Unit Tests (locally runnable, no external dependencies)
 
-| Datei | Tests | Beschreibung |
-|-------|-------|-------------|
-| `test_security.py` | 37 | Path-Traversal, SSRF, Shell-Injection, Encryption, Sanitization |
+| File | Tests | Description |
+|------|-------|-------------|
+| `test_security.py` | 37 | Path traversal, SSRF, shell injection, encryption, sanitization |
 | `test_tools.py` | 9 | ToolRegistry, PermissionManager |
-| `test_models.py` | 16 | Alle 11 DB-Models: Erstellung, Defaults, Beziehungen |
-| `test_memory.py` | 18 | MemoryManager CRUD, Suche, Prompt-Building, Embedding-Serialisierung |
-| `test_agents.py` | 25 | AgentManager CRUD, Defaults, Permissions, Risk-Levels |
-| `test_embeddings.py` | 14 | Cosine Similarity, EmbeddingProvider Verhalten |
-| `test_rate_limiter.py` | 7 | Rate Limiting: Limits, Fenster, Reset |
-| `test_tool_handlers.py` | 36 | Alle Tool-Handler: Security, Parameter, Fehlerbehandlung |
-| `test_orchestrator.py` | 28 | Agent-Loop: Approval-Flow, Auto-Approve, Permissions, Iterations, Audit |
+| `test_models.py` | 16 | All 11 DB models: creation, defaults, relationships |
+| `test_memory.py` | 18 | MemoryManager CRUD, search, prompt building, embedding serialization |
+| `test_agents.py` | 25 | AgentManager CRUD, defaults, permissions, risk levels |
+| `test_embeddings.py` | 14 | Cosine similarity, EmbeddingProvider behavior |
+| `test_rate_limiter.py` | 7 | Rate limiting: limits, windows, reset |
+| `test_tool_handlers.py` | 36 | All tool handlers: security, parameters, error handling |
+| `test_orchestrator.py` | 28 | Agent loop: approval flow, auto-approve, permissions, iterations, audit |
 
-### Integration Tests (Server-Dependencies erforderlich)
+### Integration Tests (server dependencies required)
 
-| Datei | Tests | Beschreibung |
-|-------|-------|-------------|
-| `test_api.py` | 5 | Health, Settings, Audit Endpoints |
-| `test_api_extended.py` | 22 | Agents, Memory, Conversations, Analytics API |
+| File | Tests | Description |
+|------|-------|-------------|
+| `test_api.py` | 5 | Health, settings, audit endpoints |
+| `test_api_extended.py` | 22 | Agents, memory, conversations, analytics API |
 
-Integration Tests werden automatisch uebersprungen wenn Dependencies fehlen (z.B. `apscheduler`).
+Integration tests are automatically skipped when dependencies are missing (e.g., `apscheduler`).
 
-**Gesamt: 230 Tests** (203 Unit + 27 Integration)
+**Total: 230 tests** (203 unit + 27 integration)
 
-## Architektur
+## Architecture
 
 ### Fixtures (`conftest.py`)
 
 ```python
-# In-Memory SQLite fuer isolierte Tests
+# In-memory SQLite for isolated tests
 @pytest.fixture
 async def db():
-    # Erstellt temporaere DB, rollback nach jedem Test
+    # Creates temporary DB, rollback after each test
 
-# Mock fuer Ollama Embedding Provider
+# Mock for Ollama embedding provider
 @pytest.fixture
 def mock_embedding():
-    # Verhindert Ollama-Abhaengigkeit in Tests
+    # Prevents Ollama dependency in tests
 
 # FastAPI TestClient
 @pytest.fixture
 def client():
-    # TestClient fuer API-Endpoint Tests
+    # TestClient for API endpoint tests
 ```
 
 ### Patterns
@@ -69,7 +69,7 @@ async def test_create_memory(self, db, mock_embedding):
     assert mem.key == "Key"
 ```
 
-**Security Tests (kein DB noetig):**
+**Security Tests (no DB needed):**
 ```python
 def test_path_traversal_blocked(self):
     assert validate_path("../../etc/passwd") is False
@@ -82,72 +82,72 @@ def test_list_agents(self, client):
     assert response.status_code == 200
 ```
 
-## Was wird getestet?
+## What Is Tested?
 
 ### Security (OWASP Top 10)
 
-- **Path Traversal** — `../../etc/passwd`, Windows-Pfade, sensitive Dateien (.env, .ssh, credentials)
-- **SSRF** — localhost, 127.0.0.1, interne IPs (10.x, 172.x, 192.168.x), AWS IMDS (169.254.169.254), IPv6
-- **Command Injection** — Chaining (`&&`, `||`, `;`, `|`), Substitution (`` ` ``, `$()`, `${}`), Whitelist
-- **Encryption** — Fernet-Roundtrip, leere Werte, ungueltige Ciphertexts
-- **Sanitization** — Dateinamen: Pfad-Separatoren, fuehrende Punkte, Null-Bytes, Laengenbegrenzung
+- **Path Traversal** — `../../etc/passwd`, Windows paths, sensitive files (.env, .ssh, credentials)
+- **SSRF** — localhost, 127.0.0.1, internal IPs (10.x, 172.x, 192.168.x), AWS IMDS (169.254.169.254), IPv6
+- **Command Injection** — Chaining (`&&`, `||`, `;`, `|`), substitution (`` ` ``, `$()`, `${}`), whitelist
+- **Encryption** — Fernet roundtrip, empty values, invalid ciphertexts
+- **Sanitization** — Filenames: path separators, leading dots, null bytes, length limits
 
 ### Agent System
 
-- Default-Agents werden korrekt erstellt (Assistent, Recherche, System)
-- CRUD: Erstellen, Lesen, Aktualisieren, Loeschen
-- Default-Agent kann nicht geloescht werden
-- Tool-Berechtigungen: `allowed_tools`, `auto_approve_tools`
-- Risk-Level: low < medium < high < critical
+- Default agents are correctly created (Assistant, Research, System)
+- CRUD: Create, read, update, delete
+- Default agent cannot be deleted
+- Tool permissions: `allowed_tools`, `auto_approve_tools`
+- Risk levels: low < medium < high < critical
 
 ### Memory System
 
-- CRUD: Hinzufuegen, Lesen, Aktualisieren (Upsert), Loeschen
-- Key/Content-Truncation bei Ueberschreitung
-- ILIKE-Suche (Fallback ohne Embeddings)
-- Case-insensitive Suche
-- Prompt-Building: Markdown und Plain-Text Format
-- Embedding-Serialisierung: float32 Roundtrip
+- CRUD: Add, read, update (upsert), delete
+- Key/content truncation on overflow
+- ILIKE search (fallback without embeddings)
+- Case-insensitive search
+- Prompt building: Markdown and plain text format
+- Embedding serialization: float32 roundtrip
 
 ### Rate Limiting
 
-- Erlaubt Requests bis zum Limit
-- Blockiert bei Ueberschreitung
-- Verschiedene Keys sind unabhaengig
-- Fenster-Ablauf: alte Requests zaehlen nicht
-- Reset setzt Zaehler zurueck
+- Allows requests up to the limit
+- Blocks on exceeding the limit
+- Different keys are independent
+- Window expiry: old requests do not count
+- Reset clears the counter
 
 ### Tool Handlers
 
-- **file_read**: Existierende Dateien, fehlende Parameter, Path-Traversal, sensitive Dateien blockiert
-- **file_write**: Erstellen, korrekter Inhalt, fehlende Parameter, Path-Traversal sanitized
-- **file_list**: Directory-Listing, Typ-Erkennung, blockierte Pfade
-- **web_fetch**: SSRF-Schutz (localhost, interne IPs, AWS IMDS, Docker, file://)
-- **shell_execute**: Command-Injection (&&, ||, ;, |, Backticks, $()-Substitution), Whitelist
-- **memory_save/search/delete**: Parameter-Validierung, DB-Session-Check, CRUD
+- **file_read**: Existing files, missing parameters, path traversal, sensitive files blocked
+- **file_write**: Creation, correct content, missing parameters, path traversal sanitized
+- **file_list**: Directory listing, type detection, blocked paths
+- **web_fetch**: SSRF protection (localhost, internal IPs, AWS IMDS, Docker, file://)
+- **shell_execute**: Command injection (&&, ||, ;, |, backticks, $() substitution), whitelist
+- **memory_save/search/delete**: Parameter validation, DB session check, CRUD
 
-### Orchestrator (Agent-Loop)
+### Orchestrator (Agent Loop)
 
-- **Basic Flow**: Text-Antwort ohne Tools, leerer Content, LLM erhaelt Tool-Definitionen
-- **Auto-Approve**: Tools mit `requires_approval=False` werden automatisch ausgefuehrt
-- **Approval Flow**: Genehmigung, Ablehnung, `approval_id` und `risk_level` im Request
-- **Session Permissions**: Zweiter Call ueberspringt Approval nach Session-Genehmigung
-- **Agent Permissions**: Gesperrte Tools, Agent-Auto-Approve, Default-Agent erlaubt alles
-- **Iterationen**: Max-Iterations-Warning, Custom Limits, Multi-Tool-Responses
-- **Fehlerbehandlung**: ToolExecutionError, unerwartete Exceptions
-- **Audit-Logging**: Tool-Requests, Ausfuehrungen, Ablehnungen, Fehler werden geloggt
+- **Basic Flow**: Text response without tools, empty content, LLM receives tool definitions
+- **Auto-Approve**: Tools with `requires_approval=False` are executed automatically
+- **Approval Flow**: Approval, rejection, `approval_id` and `risk_level` in the request
+- **Session Permissions**: Second call skips approval after session approval
+- **Agent Permissions**: Blocked tools, agent auto-approve, default agent allows everything
+- **Iterations**: Max iterations warning, custom limits, multi-tool responses
+- **Error Handling**: ToolExecutionError, unexpected exceptions
+- **Audit Logging**: Tool requests, executions, rejections, errors are logged
 
 ### API Endpoints
 
-- Health Check: `/` und `/health`
-- Settings: App-Info, Provider-Status, API-Key-Maskierung
-- Agents: CRUD, Default-Schutz
-- Memory: CRUD, Suche
-- Analytics: Overview-Statistiken
+- Health check: `/` and `/health`
+- Settings: App info, provider status, API key masking
+- Agents: CRUD, default protection
+- Memory: CRUD, search
+- Analytics: Overview statistics
 
 ## CI
 
-Tests laufen automatisch im CI-Workflow (`.github/workflows/ci.yml`):
+Tests run automatically in the CI workflow (`.github/workflows/ci.yml`):
 
 ```yaml
 - name: Run tests
@@ -156,7 +156,7 @@ Tests laufen automatisch im CI-Workflow (`.github/workflows/ci.yml`):
     pytest tests/ -v || echo "No tests found yet"
 ```
 
-## Tests auf dem Server ausfuehren
+## Running Tests on the Server
 
 ```bash
 ssh root@78.46.106.190

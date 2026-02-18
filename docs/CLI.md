@@ -1,10 +1,10 @@
-# Axon CLI — Dokumentation
+# Axon CLI — Documentation
 
-Die Axon CLI ist ein standalone Terminal-Client fuer Axon. Sie kommuniziert ueber HTTP mit dem Axon-Backend und bietet SSE-Streaming, Tool-Approval und Pipe-Support.
+The Axon CLI is a standalone terminal client for Axon. It communicates via HTTP with the Axon backend and offers SSE streaming, tool approval, and pipe support.
 
 ## Installation
 
-### Option 1: pip install (empfohlen)
+### Option 1: pip install (recommended)
 
 ```bash
 cd axon-community
@@ -12,9 +12,9 @@ pip install -e ./cli
 axon --help
 ```
 
-Dies registriert den `axon` Command global.
+This registers the `axon` command globally.
 
-### Option 2: Direkt ausfuehren
+### Option 2: Run directly
 
 ```bash
 python cli/axon_cli.py --help
@@ -23,188 +23,188 @@ python cli/axon_cli.py --help
 ### Option 3: Alias (PowerShell)
 
 ```powershell
-Set-Alias axon "python C:\pfad\zu\axon-community\cli\axon_cli.py"
+Set-Alias axon "python C:\path\to\axon-community\cli\axon_cli.py"
 ```
 
 ### Option 3: Alias (Bash/Zsh)
 
 ```bash
-alias axon="python3 /pfad/zu/axon-community/cli/axon_cli.py"
+alias axon="python3 /path/to/axon-community/cli/axon_cli.py"
 ```
 
 ### Dependencies
 
 - Python 3.10+
-- `typer` >= 0.9.0 — CLI-Framework
-- `httpx` >= 0.27.0 — HTTP-Client mit Streaming
-- `rich` >= 13.0.0 — Farbige Terminal-Ausgabe
+- `typer` >= 0.9.0 — CLI framework
+- `httpx` >= 0.27.0 — HTTP client with streaming
+- `rich` >= 13.0.0 — Colored terminal output
 
-## Konfiguration
+## Configuration
 
-Die CLI speichert ihre Konfiguration in `~/.axon/config.json`. Die Datei wird beim ersten Start automatisch mit Defaults erstellt.
+The CLI stores its configuration in `~/.axon/config.json`. The file is automatically created with defaults on first startup.
 
-### Server-URL setzen
+### Set Server URL
 
 ```bash
-axon config set url http://localhost:8000        # Lokal
+axon config set url http://localhost:8000        # Local
 axon config set url https://axon.example.com     # Remote
 ```
 
-### Basic Auth (fuer Deployments mit Nginx Auth)
+### Basic Auth (for deployments with Nginx auth)
 
 ```bash
-axon config set auth benutzername:passwort
+axon config set auth username:password
 ```
 
-### Sprache
+### Language
 
 ```bash
-axon config set language de    # Deutsch (Standard)
+axon config set language de    # German (default)
 axon config set language en    # English
 ```
 
-### Konfiguration anzeigen
+### Show Configuration
 
 ```bash
 axon config show
 ```
 
 ```
-+------------------------------- Konfiguration -------------------------------+
-| URL:      https://axon.example.com                                          |
-| Auth:     benutzername:****                                                 |
-| Sprache:  de                                                                |
-+-----------------------------------------------------------------------------+
++------------------------------- Configuration ------------------------------+
+| URL:      https://axon.example.com                                         |
+| Auth:     username:****                                                    |
+| Language: de                                                               |
++----------------------------------------------------------------------------+
 ```
 
 ## Commands
 
-### axon chat — Nachricht senden
+### axon chat — Send Message
 
 ```bash
-# Einfache Nachricht
-axon chat "Was ist Python?"
+# Simple message
+axon chat "What is Python?"
 
-# Mit spezifischem Agent
-axon chat --agent Recherche "Suche nach FastAPI Tutorials"
+# With specific agent
+axon chat --agent Research "Search for FastAPI tutorials"
 
-# Session fortsetzen (nutze Session-ID aus vorherigem Chat)
-axon chat --session abc123 "Und was noch?"
+# Continue session (use session ID from previous chat)
+axon chat --session abc123 "And what else?"
 ```
 
-Die Antwort wird live per SSE-Streaming angezeigt — Wort fuer Wort, wie im Web-UI.
+The response is displayed live via SSE streaming — word by word, just like in the web UI.
 
-### Pipe-Support
+### Pipe Support
 
-Die CLI erkennt automatisch, ob Input ueber eine Pipe kommt:
+The CLI automatically detects whether input comes through a pipe:
 
 ```bash
-# Datei-Inhalt senden
+# Send file content
 cat README.md | axon chat
 type README.md | axon chat          # Windows CMD
 
-# Command-Output analysieren
+# Analyze command output
 git log --oneline -10 | axon chat
 docker ps | axon chat --agent System
 
 # Scripting
-echo "Fasse zusammen: $(cat report.txt)" | axon chat
+echo "Summarize: $(cat report.txt)" | axon chat
 ```
 
-### Tool-Approval
+### Tool Approval
 
-Wenn der Agent ein Tool nutzen will, erscheint ein farbiges Panel:
+When the agent wants to use a tool, a colored panel appears:
 
 ```
-+------------------------------- Tool-Anfrage --------------------------------+
++------------------------------- Tool Request --------------------------------+
 | Tool:   web_search                                                          |
-| Risiko: niedrig                                                             |
-|   Durchsucht das Web mit DuckDuckGo                                         |
+| Risk:   low                                                                 |
+|   Searches the web using DuckDuckGo                                         |
 |                                                                             |
-|   query: FastAPI Performance Tipps                                          |
+|   query: FastAPI performance tips                                           |
 +-----------------------------------------------------------------------------+
 [A]llow  [S]ession  [R]eject (a):
 ```
 
-- **A (Allow)**: Tool einmalig ausfuehren
-- **S (Session)**: Tool fuer diese Session immer erlauben
-- **R (Reject)**: Tool ablehnen
+- **A (Allow)**: Execute tool once
+- **S (Session)**: Always allow tool for this session
+- **R (Reject)**: Reject tool
 
-Das Risiko-Level wird farblich markiert: gruen (niedrig), gelb (mittel), rot (hoch).
+The risk level is color-coded: green (low), yellow (medium), red (high).
 
-### axon (REPL-Modus)
+### axon (REPL Mode)
 
-Ohne Subcommand startet der interaktive Modus:
+Without a subcommand, interactive mode starts:
 
 ```bash
 axon
 ```
 
 ```
-+------------ Axon CLI v1.0.0 — Verbunden mit https://axon.example.com ------+
-Schreibe eine Nachricht oder /help fuer Hilfe. Beende mit /exit oder Ctrl+C.
++------------ Axon CLI v1.0.0 — Connected to https://axon.example.com ------+
+Type a message or /help for help. Exit with /exit or Ctrl+C.
 
-> Hallo!
-Hallo! Wie kann ich dir helfen?
+> Hello!
+Hello! How can I help you?
 
-> /agent Recherche
-Agent gewechselt zu: Recherche
+> /agent Research
+Agent switched to: Research
 
-> Suche nach Python 3.13 Features
-[SSE-Streaming...]
+> Search for Python 3.13 features
+[SSE Streaming...]
 
 > /new
-Neue Session gestartet.
+New session started.
 
 > /exit
-Auf Wiedersehen!
+Goodbye!
 ```
 
-**REPL-Commands:**
+**REPL Commands:**
 
-| Command | Beschreibung |
+| Command | Description |
 |---------|-------------|
-| `/help` | Hilfe anzeigen |
-| `/new` | Neue Session starten |
-| `/agent <name>` | Agent wechseln |
-| `/exit` oder `Ctrl+C` | Beenden |
+| `/help` | Show help |
+| `/new` | Start new session |
+| `/agent <name>` | Switch agent |
+| `/exit` or `Ctrl+C` | Quit |
 
-### axon agents — Agents verwalten
+### axon agents — Manage Agents
 
 ```bash
-# Alle Agents auflisten
+# List all agents
 axon agents
 ```
 
 ```
                                     Agents
 +----------+-------------------------+--------+------------+---------+-------+
-| Name     | Beschreibung            | Modell | Risiko Max | Default | Aktiv |
+| Name     | Description             | Model  | Risk Max   | Default | Active|
 |----------+-------------------------+--------+------------+---------+-------|
-| Assistent| Allgemeiner KI-Assistent| -      | high       |   ja    |  ja   |
-| Recherche| Web-Recherche           | -      | medium     |         |  ja   |
-| System   | Shell-Zugriff           | -      | high       |         |  ja   |
+| Assistant| General AI assistant    | -      | high       |   yes   |  yes  |
+| Research | Web research            | -      | medium     |         |  yes  |
+| System   | Shell access            | -      | high       |         |  yes  |
 +----------+-------------------------+--------+------------+---------+-------+
 ```
 
 ```bash
-# Agent-Details
-axon agents show Recherche
+# Agent details
+axon agents show Research
 ```
 
-### axon memory — Memory verwalten
+### axon memory — Manage Memory
 
 ```bash
-# Alle Memories auflisten
+# List all memories
 axon memory list
 
-# Memory durchsuchen
+# Search memory
 axon memory search "Python"
 
-# Memory hinzufuegen
-axon memory add "Projekt" "Wir nutzen FastAPI und React" --category Technik
+# Add memory
+axon memory add "Project" "We use FastAPI and React" --category Tech
 
-# Memory loeschen (volle UUID aus 'memory list')
+# Delete memory (full UUID from 'memory list')
 axon memory delete 8ae2871e-2f40-4aff-860e-3e0bcdcaeed3
 ```
 
@@ -216,7 +216,7 @@ axon status
 
 ```
 +-------------------------------- Axon Status --------------------------------+
-| Server erreichbar  https://axon.example.com                                 |
+| Server reachable  https://axon.example.com                                  |
 | App:     Axon by NeuroVexon                                                 |
 | Version: 2.0.0                                                              |
 |                                                                             |
@@ -233,7 +233,7 @@ axon status
 +-----------------------------------------------------------------------------+
 ```
 
-### axon version — Versionsinformation
+### axon version — Version Information
 
 ```bash
 axon version
@@ -248,55 +248,55 @@ axon version
 
 ## Scripting & Automation
 
-Die CLI ist fuer Automatisierung ausgelegt:
+The CLI is designed for automation:
 
 ```bash
-# Health-Check in einem Skript
-axon status || echo "Server nicht erreichbar"
+# Health check in a script
+axon status || echo "Server not reachable"
 
-# Memory aus Datei importieren
+# Import memory from file
 while IFS="|" read -r key content; do
   axon memory add "$key" "$content"
 done < memories.csv
 
-# Taeglich ausfuehren (crontab)
-0 9 * * * echo "Tagesbericht fuer $(date)" | /usr/local/bin/axon chat >> /var/log/axon-daily.log
+# Run daily (crontab)
+0 9 * * * echo "Daily report for $(date)" | /usr/local/bin/axon chat >> /var/log/axon-daily.log
 ```
 
-## Plattform-Kompatibilitaet
+## Platform Compatibility
 
-| Plattform | Shell | Pipe | REPL | Status |
-|-----------|-------|------|------|--------|
-| Windows 10/11 | PowerShell | Ja | Ja | Getestet |
-| Windows 10/11 | CMD | Ja | Ja | Getestet |
-| Linux | Bash/Zsh | Ja | Ja | Getestet |
-| macOS | Zsh/Bash | Ja | Ja | Kompatibel |
+| Platform | Shell | Pipe | REPL | Status |
+|----------|-------|------|------|--------|
+| Windows 10/11 | PowerShell | Yes | Yes | Tested |
+| Windows 10/11 | CMD | Yes | Yes | Tested |
+| Linux | Bash/Zsh | Yes | Yes | Tested |
+| macOS | Zsh/Bash | Yes | Yes | Compatible |
 
-## Fehlerbehebung
+## Troubleshooting
 
-### Verbindung fehlgeschlagen
-
-```
-Verbindung fehlgeschlagen: [Errno 111] Connection refused
-```
-
-Pruefe mit `axon config show` ob die URL korrekt ist und ob der Server laeuft.
-
-### Authentifizierung fehlgeschlagen (401)
+### Connection Failed
 
 ```
-Authentifizierung fehlgeschlagen (401). Pruefe 'axon config set auth'.
+Connection failed: [Errno 111] Connection refused
 ```
 
-Setze die korrekten Zugangsdaten:
+Check with `axon config show` whether the URL is correct and whether the server is running.
+
+### Authentication Failed (401)
+
+```
+Authentication failed (401). Check 'axon config set auth'.
+```
+
+Set the correct credentials:
 ```bash
-axon config set auth benutzername:passwort
+axon config set auth username:password
 ```
 
-### Server-Fehler (404)
+### Server Error (404)
 
-Einige Endpoints existieren erst ab bestimmten Server-Versionen:
-- `/api/v1/agents` — ab v2.0.0
-- `/api/v1/analytics/overview` — ab v2.0.0
+Some endpoints only exist from certain server versions:
+- `/api/v1/agents` — from v2.0.0
+- `/api/v1/analytics/overview` — from v2.0.0
 
-Pruefe die Server-Version mit `axon version`.
+Check the server version with `axon version`.

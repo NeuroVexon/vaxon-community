@@ -9,121 +9,121 @@
 
 ## Reporting a Vulnerability
 
-Wir nehmen die Sicherheit von Axon sehr ernst. Wenn du eine Sicherheitslücke findest, melde sie bitte verantwortungsvoll.
+We take the security of Axon very seriously. If you find a security vulnerability, please report it responsibly.
 
-### Wie melden?
+### How to Report?
 
-**Bitte erstelle KEIN öffentliches GitHub Issue für Sicherheitslücken.**
+**Please do NOT create a public GitHub Issue for security vulnerabilities.**
 
-Stattdessen sende eine E-Mail an: **service@neurovexon.com**
+Instead, send an email to: **service@neurovexon.com**
 
-Bitte füge folgende Informationen hinzu:
+Please include the following information:
 
-1. **Beschreibung** der Sicherheitslücke
-2. **Schritte zur Reproduktion**
-3. **Betroffene Versionen**
-4. **Mögliche Auswirkungen**
-5. **Vorgeschlagene Lösung** (falls vorhanden)
+1. **Description** of the vulnerability
+2. **Steps to reproduce**
+3. **Affected versions**
+4. **Potential impact**
+5. **Suggested fix** (if available)
 
-### Was passiert nach der Meldung?
+### What Happens After Reporting?
 
-1. **Bestätigung** - Wir bestätigen den Erhalt innerhalb von 48 Stunden
-2. **Bewertung** - Wir bewerten die Schwere und Auswirkung
-3. **Fix** - Wir entwickeln einen Fix
-4. **Disclosure** - Nach dem Fix veröffentlichen wir ein Security Advisory
+1. **Acknowledgment** - We will confirm receipt within 48 hours
+2. **Assessment** - We will assess the severity and impact
+3. **Fix** - We will develop a fix
+4. **Disclosure** - After the fix, we will publish a Security Advisory
 
-### Zeitrahmen
+### Timeline
 
-- Kritische Sicherheitslücken: Fix innerhalb von 7 Tagen
-- Hohe Sicherheitslücken: Fix innerhalb von 14 Tagen
-- Mittlere Sicherheitslücken: Fix innerhalb von 30 Tagen
+- Critical vulnerabilities: Fix within 7 days
+- High vulnerabilities: Fix within 14 days
+- Medium vulnerabilities: Fix within 30 days
 
-## Sicherheitsarchitektur
+## Security Architecture
 
-### Tool Execution — Approval-System
+### Tool Execution — Approval System
 
-- **Explicit Approval**: Jede Tool-Ausführung erfordert User-Bestätigung
-- **Per-Agent Permissions**: Jeder Agent hat eigene erlaubte Tools und Risiko-Level
-- **Auto-Approve**: Nur fuer risikoarme Tools konfigurierbar (z.B. `web_search`)
-- **Session-basierte Permissions**: "Allow once" oder "Allow for session"
-- **Audit-Trail**: Jede Anfrage, Genehmigung, Ausfuehrung und Ablehnung wird geloggt
+- **Explicit Approval**: Every tool execution requires user confirmation
+- **Per-Agent Permissions**: Each agent has its own allowed tools and risk levels
+- **Auto-Approve**: Only configurable for low-risk tools (e.g., `web_search`)
+- **Session-based Permissions**: "Allow once" or "Allow for session"
+- **Audit Trail**: Every request, approval, execution, and rejection is logged
 
-### Tool-Sicherheit
+### Tool Security
 
-- **Shell Whitelist**: Nur vordefinierte Commands sind erlaubt, Chaining blockiert (`&&`, `||`, `;`, `|`, Backticks, `$()`)
-- **File Write Restriction**: Schreiben nur in `/outputs/` moeglich
-- **Path-Traversal Schutz**: `validate_path()` blockiert `..`, absolute Pfade, Symlinks
-- **SSRF-Schutz**: `validate_url()` blockiert localhost, interne IPs, AWS IMDS
-- **Skills Gate**: SHA-256 Hash-Pruefung, automatische Revocation bei Dateiänderungen
+- **Shell Whitelist**: Only predefined commands are allowed, chaining is blocked (`&&`, `||`, `;`, `|`, backticks, `$()`)
+- **File Write Restriction**: Writing only possible in `/outputs/`
+- **Path Traversal Protection**: `validate_path()` blocks `..`, absolute paths, symlinks
+- **SSRF Protection**: `validate_url()` blocks localhost, internal IPs, AWS IMDS
+- **Skills Gate**: SHA-256 hash verification, automatic revocation on file changes
 
-### Code-Sandbox (Docker)
+### Code Sandbox (Docker)
 
-- **Netzwerk-Isolation**: `--network none` — kein Internet, kein LAN
-- **Resource-Limits**: 256 MB RAM, 0.5 CPU, 60s Timeout
-- **Read-only Filesystem**: Container kann nichts persistent schreiben
-- **Unprivilegierter User**: Code laeuft als `sandbox` User, nicht als root
-- **Kein Host-Zugriff**: Keine Volume-Mounts zum Host-Filesystem
-- **Max 3 gleichzeitige Container**, max 10.000 Zeichen Output
-- **Immer Approval**: `code_execute` ist risk_level: high, erfordert immer Genehmigung
+- **Network Isolation**: `--network none` — no internet, no LAN
+- **Resource Limits**: 256 MB RAM, 0.5 CPU, 60s timeout
+- **Read-only Filesystem**: Container cannot write anything persistently
+- **Unprivileged User**: Code runs as `sandbox` user, not root
+- **No Host Access**: No volume mounts to the host filesystem
+- **Max 3 concurrent containers**, max 10,000 characters output
+- **Always Approval**: `code_execute` is risk_level: high, always requires approval
 
-### E-Mail-Sicherheit
+### Email Security
 
-- **Read-Only Inbox**: Axon kann E-Mails lesen und suchen, aber NICHT loeschen, verschieben oder als gelesen markieren
-- **Send mit Approval**: E-Mail-Versand zeigt immer Empfaenger, Betreff und Text zur Genehmigung
-- **Verschluesselte Credentials**: IMAP/SMTP-Passwoerter werden mit Fernet verschluesselt in der DB gespeichert
+- **Read-Only Inbox**: Axon can read and search emails, but CANNOT delete, move, or mark them as read
+- **Send with Approval**: Email sending always shows recipient, subject, and body for approval
+- **Encrypted Credentials**: IMAP/SMTP passwords are stored encrypted with Fernet in the database
 
-### MCP-Server
+### MCP Server
 
-- **Bearer Token Auth**: Zugriff nur mit konfiguriertem Token
-- **Rate Limiting**: Schutz gegen Missbrauch
-- **Approval-System**: Externe AI-Clients (Claude Desktop, Cursor) laufen durch das gleiche Approval-System
-- **Standardmaessig deaktiviert**: `MCP_ENABLED=false`
+- **Bearer Token Auth**: Access only with configured token
+- **Rate Limiting**: Protection against abuse
+- **Approval System**: External AI clients (Claude Desktop, Cursor) go through the same approval system
+- **Disabled by Default**: `MCP_ENABLED=false`
 
 ### Scheduled Tasks
 
-- **Max 10 aktive Tasks**: Verhindert Ressourcen-Missbrauch
-- **Timeout 5 Minuten**: Kein Task laeuft unbegrenzt
-- **Max 1/min pro Task**: Rate-Limiting gegen Spam
-- **Approval-Gate**: Optional Genehmigung vor jeder Ausfuehrung
-- **Fehler im Audit-Log**: Jeder Fehler wird protokolliert
+- **Max 10 active tasks**: Prevents resource abuse
+- **Timeout 5 minutes**: No task runs indefinitely
+- **Max 1/min per task**: Rate limiting against spam
+- **Approval Gate**: Optional approval before each execution
+- **Errors in Audit Log**: Every error is logged
 
 ### Data Protection
 
-- **Local First**: Alle Daten bleiben lokal (SQLite)
-- **No Telemetry**: Keine Daten werden an externe Server gesendet
-- **Verschluesselte API-Keys**: Fernet-Verschluesselung in der SQLite DB
-- **Audit Log**: Alle Aktionen werden protokolliert und als CSV exportierbar
-- **DSGVO-konform**: On-Premise Betrieb moeglich, keine Cloud-Abhaengigkeit
+- **Local First**: All data stays local (SQLite)
+- **No Telemetry**: No data is sent to external servers
+- **Encrypted API Keys**: Fernet encryption in the SQLite database
+- **Audit Log**: All actions are logged and exportable as CSV
+- **GDPR Compliant**: On-premise operation possible, no cloud dependency
 
 ### API Security
 
-- **CORS**: Strikte Origin-Kontrolle
-- **Input Validation**: Pydantic-Schemas fuer alle Inputs
-- **Rate Limiting**: Empfohlen fuer Production (Nginx)
-- **Basic Auth**: Fuer oeffentliche Deployments via Reverse Proxy
+- **CORS**: Strict origin control
+- **Input Validation**: Pydantic schemas for all inputs
+- **Rate Limiting**: Recommended for production (Nginx)
+- **Basic Auth**: For public deployments via reverse proxy
 
-### CLI-Sicherheit
+### CLI Security
 
-- **Credentials lokal**: Auth-Daten in `~/.axon/config.json` (nur User-lesbar)
-- **HTTPS**: Unterstuetzt TLS-Verbindungen zum Server
-- **Keine Secrets im Output**: Passwoerter werden maskiert angezeigt
+- **Local Credentials**: Auth data in `~/.axon/config.json` (user-readable only)
+- **HTTPS**: Supports TLS connections to the server
+- **No Secrets in Output**: Passwords are displayed masked
 
-## Best Practices fuer Deployment
+## Best Practices for Deployment
 
 ### Production Checklist
 
-- [ ] `SECRET_KEY` aendern (generiere mit `openssl rand -hex 32`)
-- [ ] `DEBUG=false` setzen
-- [ ] HTTPS aktivieren (Reverse Proxy mit SSL)
-- [ ] Basic Auth oder anderes Auth-System vor dem Frontend
-- [ ] Firewall konfigurieren (nur 80/443 oeffentlich)
-- [ ] MCP-Server nur aktivieren wenn benoetigt (`MCP_ENABLED=false`)
-- [ ] Code-Sandbox nur aktivieren wenn benoetigt (`SANDBOX_ENABLED=false`)
-- [ ] E-Mail nur aktivieren wenn benoetigt (`EMAIL_ENABLED=false`)
-- [ ] Regelmaessige Updates installieren
-- [ ] Audit-Logs regelmaessig pruefen
+- [ ] Change `SECRET_KEY` (generate with `openssl rand -hex 32`)
+- [ ] Set `DEBUG=false`
+- [ ] Enable HTTPS (reverse proxy with SSL)
+- [ ] Basic Auth or other auth system in front of the frontend
+- [ ] Configure firewall (only 80/443 public)
+- [ ] Only enable MCP server if needed (`MCP_ENABLED=false`)
+- [ ] Only enable code sandbox if needed (`SANDBOX_ENABLED=false`)
+- [ ] Only enable email if needed (`EMAIL_ENABLED=false`)
+- [ ] Install regular updates
+- [ ] Review audit logs regularly
 
-### Empfohlene Reverse Proxy Config (nginx)
+### Recommended Reverse Proxy Config (nginx)
 
 ```nginx
 server {
@@ -133,7 +133,7 @@ server {
     ssl_certificate /path/to/cert.pem;
     ssl_certificate_key /path/to/key.pem;
 
-    # Basic Auth fuer oeffentliche Instanzen
+    # Basic Auth for public instances
     auth_basic "Axon";
     auth_basic_user_file /etc/nginx/.htpasswd;
 
@@ -146,14 +146,14 @@ server {
     }
 
     location /api {
-        auth_basic off;  # API Auth separat handhaben
+        auth_basic off;  # Handle API auth separately
         proxy_pass http://localhost:8000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
 
-        # SSE-Streaming
+        # SSE Streaming
         proxy_buffering off;
         proxy_cache off;
         proxy_read_timeout 300s;
@@ -161,23 +161,23 @@ server {
 }
 ```
 
-## Bekannte Einschraenkungen
+## Known Limitations
 
-1. **Code-Sandbox**: Docker-basiert mit Netzwerk-Isolation. Fuer hochsensible Umgebungen kann `SANDBOX_ENABLED=false` gesetzt werden.
+1. **Code Sandbox**: Docker-based with network isolation. For highly sensitive environments, `SANDBOX_ENABLED=false` can be set.
 
-2. **Web Fetch**: SSRF-Schutz blockiert localhost und private IPs. Andere interne Dienste koennten ueber Hostnamen erreichbar sein — Netzwerk-Segmentierung empfohlen.
+2. **Web Fetch**: SSRF protection blocks localhost and private IPs. Other internal services may be reachable via hostnames — network segmentation recommended.
 
-3. **File Read**: Systemdateien und bekannte sensitive Pfade sind blockiert. Die Blocklist ist nicht erschoepfend.
+3. **File Read**: System files and known sensitive paths are blocked. The blocklist is not exhaustive.
 
-4. **SQLite**: Single-Writer — bei hoher Last koennen `database is locked` Fehler auftreten. WAL-Modus und `busy_timeout=30000` sind konfiguriert.
+4. **SQLite**: Single-writer — under high load, `database is locked` errors may occur. WAL mode and `busy_timeout=30000` are configured.
 
 ## Responsible Disclosure
 
-Wir erkennen Sicherheitsforscher an, die Sicherheitsluecken verantwortungsvoll melden. Nach Absprache werden wir:
+We acknowledge security researchers who responsibly report vulnerabilities. Upon agreement, we will:
 
-- Deinen Namen in den Release Notes erwaehnen (falls gewuenscht)
-- Ein Dankeschoen aussprechen
+- Mention your name in the release notes (if desired)
+- Express our gratitude
 
 ---
 
-Vielen Dank, dass du Axon sicherer machst!
+Thank you for helping make Axon more secure!

@@ -1,104 +1,104 @@
 # Skills System
 
-Axon unterstützt erweiterbare Skills — Community-Plugins, die neue Fähigkeiten hinzufügen.
+Axon supports extensible skills — community plugins that add new capabilities.
 
-## Sicherheits-Gate
+## Security Gate
 
-Jeder Skill durchläuft einen **Sicherheitsprozess**, bevor er ausgeführt werden kann:
+Every skill goes through a **security process** before it can be executed:
 
-1. **Scan**: Skills-Verzeichnis wird nach `.py` Dateien durchsucht
-2. **Validierung**: Struktur wird geprüft (Pflichtattribute, execute-Funktion)
-3. **Registrierung**: Skill wird in der DB gespeichert (nicht aktiv)
-4. **Genehmigung**: User muss den Skill explizit in der UI genehmigen
-5. **Hash-Prüfung**: Bei jeder Ausführung wird der SHA-256 Hash der Datei geprüft
-6. **Auto-Revocation**: Wird die Datei geändert, wird die Genehmigung automatisch widerrufen
+1. **Scan**: The skills directory is searched for `.py` files
+2. **Validation**: Structure is verified (required attributes, execute function)
+3. **Registration**: Skill is stored in the database (not active)
+4. **Approval**: User must explicitly approve the skill in the UI
+5. **Hash Check**: On every execution, the SHA-256 hash of the file is verified
+6. **Auto-Revocation**: If the file is modified, the approval is automatically revoked
 
-## Skill erstellen
+## Creating a Skill
 
-Erstelle eine `.py` Datei in `backend/skills/`:
+Create a `.py` file in `backend/skills/`:
 
 ```python
 """
-Mein Custom Skill
+My Custom Skill
 """
 
-# Pflichtattribute
-SKILL_NAME = "my_skill"              # Eindeutiger Name (snake_case)
-SKILL_DISPLAY_NAME = "Mein Skill"    # Anzeigename
-SKILL_DESCRIPTION = "Beschreibung"   # Was macht der Skill?
+# Required attributes
+SKILL_NAME = "my_skill"              # Unique name (snake_case)
+SKILL_DISPLAY_NAME = "My Skill"      # Display name
+SKILL_DESCRIPTION = "Description"    # What does the skill do?
 SKILL_VERSION = "1.0.0"              # SemVer
 
-# Optionale Attribute
-SKILL_AUTHOR = "Dein Name"
+# Optional attributes
+SKILL_AUTHOR = "Your Name"
 SKILL_RISK_LEVEL = "low"             # low, medium, high, critical
 
 SKILL_PARAMETERS = {
-    "input": {"type": "string", "description": "Eingabe", "required": True},
+    "input": {"type": "string", "description": "Input", "required": True},
     "option": {"type": "integer", "description": "Option", "default": 5}
 }
 
 
 def execute(params: dict) -> str:
-    """Hauptfunktion — wird vom Agent aufgerufen"""
+    """Main function — called by the agent"""
     input_text = params.get("input", "")
     option = params.get("option", 5)
 
-    # Deine Logik hier
-    result = f"Verarbeitet: {input_text}"
+    # Your logic here
+    result = f"Processed: {input_text}"
 
     return result
 ```
 
-### Pflichtattribute
+### Required Attributes
 
-| Attribut | Typ | Beschreibung |
-|----------|-----|-------------|
-| `SKILL_NAME` | str | Eindeutiger technischer Name |
-| `SKILL_DESCRIPTION` | str | Beschreibung der Funktionalität |
-| `SKILL_VERSION` | str | Versionsnummer (SemVer) |
-| `execute(params)` | function | Hauptfunktion (sync oder async) |
+| Attribute | Type | Description |
+|-----------|------|-------------|
+| `SKILL_NAME` | str | Unique technical name |
+| `SKILL_DESCRIPTION` | str | Description of the functionality |
+| `SKILL_VERSION` | str | Version number (SemVer) |
+| `execute(params)` | function | Main function (sync or async) |
 
-### Optionale Attribute
+### Optional Attributes
 
-| Attribut | Typ | Standard | Beschreibung |
-|----------|-----|----------|-------------|
-| `SKILL_DISPLAY_NAME` | str | = SKILL_NAME | Anzeigename in der UI |
-| `SKILL_AUTHOR` | str | None | Autor des Skills |
-| `SKILL_RISK_LEVEL` | str | "medium" | Risikostufe |
-| `SKILL_PARAMETERS` | dict | {} | Parameter-Definitionen |
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `SKILL_DISPLAY_NAME` | str | = SKILL_NAME | Display name in the UI |
+| `SKILL_AUTHOR` | str | None | Author of the skill |
+| `SKILL_RISK_LEVEL` | str | "medium" | Risk level |
+| `SKILL_PARAMETERS` | dict | {} | Parameter definitions |
 
-## Mitgelieferte Skills
+## Included Skills
 
 ### summarize
-- **Beschreibung**: Fasst einen Text extraktiv in wenigen Sätzen zusammen
-- **Risiko**: Niedrig
-- **Parameter**: `text` (string), `max_sentences` (int, default: 3)
+- **Description**: Extractively summarizes a text in a few sentences
+- **Risk**: Low
+- **Parameters**: `text` (string), `max_sentences` (int, default: 3)
 
 ### word_count
-- **Beschreibung**: Zählt Wörter, Zeichen, Sätze und Absätze
-- **Risiko**: Niedrig
-- **Parameter**: `text` (string)
+- **Description**: Counts words, characters, sentences, and paragraphs
+- **Risk**: Low
+- **Parameters**: `text` (string)
 
 ### json_formatter
-- **Beschreibung**: Formatiert, validiert und analysiert JSON-Daten
-- **Risiko**: Niedrig
-- **Parameter**: `json_string` (string), `indent` (int), `sort_keys` (bool)
+- **Description**: Formats, validates, and analyzes JSON data
+- **Risk**: Low
+- **Parameters**: `json_string` (string), `indent` (int), `sort_keys` (bool)
 
 ## API Endpoints
 
-| Methode | Endpoint | Beschreibung |
-|---------|----------|-------------|
-| GET | `/api/v1/skills` | Alle Skills auflisten (inkl. Auto-Scan) |
-| GET | `/api/v1/skills/{id}` | Einzelnen Skill abrufen |
-| POST | `/api/v1/skills/{id}/approve` | Skill genehmigen/widerrufen |
-| POST | `/api/v1/skills/{id}/toggle` | Skill aktivieren/deaktivieren |
-| DELETE | `/api/v1/skills/{id}` | Skill aus DB entfernen |
-| POST | `/api/v1/skills/scan` | Manueller Verzeichnis-Scan |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/skills` | List all skills (incl. auto-scan) |
+| GET | `/api/v1/skills/{id}` | Get a single skill |
+| POST | `/api/v1/skills/{id}/approve` | Approve/revoke a skill |
+| POST | `/api/v1/skills/{id}/toggle` | Enable/disable a skill |
+| DELETE | `/api/v1/skills/{id}` | Remove skill from database |
+| POST | `/api/v1/skills/scan` | Manual directory scan |
 
-## Sicherheitshinweise
+## Security Notes
 
-- Skills werden **nicht** in einer Sandbox ausgeführt — sie haben vollen Zugriff auf den Python-Prozess
-- Prüfe den Quellcode eines Skills **immer**, bevor du ihn genehmigst
-- Das Hash-System schützt vor **unbemerkten Änderungen**, nicht vor bösartigem Code
-- Verwende Skills von unbekannten Quellen nur, wenn du den Code verstehst
-- In einer zukünftigen Version ist eine Docker-Sandbox für Skills geplant
+- Skills are **not** executed in a sandbox — they have full access to the Python process
+- **Always** review the source code of a skill before approving it
+- The hash system protects against **unnoticed changes**, not against malicious code
+- Only use skills from unknown sources if you understand the code
+- A Docker sandbox for skills is planned for a future version

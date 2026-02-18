@@ -1,12 +1,12 @@
 # API Reference
 
-Axon Backend API Dokumentation.
+Axon Backend API documentation.
 
 Base URL: `http://localhost:8000/api/v1`
 
 ## Authentication
 
-Aktuell keine Authentifizierung erforderlich (Single-User Mode).
+Currently no authentication required (single-user mode).
 
 ## Endpoints
 
@@ -14,7 +14,7 @@ Aktuell keine Authentifizierung erforderlich (Single-User Mode).
 
 #### Send Message
 
-Sendet eine Nachricht und erhält eine Antwort.
+Sends a message and receives a response.
 
 ```http
 POST /chat/send
@@ -24,7 +24,7 @@ Content-Type: application/json
 **Request Body:**
 ```json
 {
-  "message": "Hallo!",
+  "message": "Hello!",
   "session_id": "optional-session-id",
   "system_prompt": "Optional system prompt"
 }
@@ -34,14 +34,14 @@ Content-Type: application/json
 ```json
 {
   "session_id": "abc123",
-  "message": "Hallo! Wie kann ich dir helfen?",
+  "message": "Hello! How can I help you?",
   "tool_calls": null
 }
 ```
 
 #### Stream Message
 
-Sendet eine Nachricht und streamt die Antwort.
+Sends a message and streams the response.
 
 ```http
 POST /chat/stream
@@ -51,15 +51,15 @@ Content-Type: application/json
 **Request Body:**
 ```json
 {
-  "message": "Erkläre mir Python",
+  "message": "Explain Python to me",
   "session_id": "optional-session-id"
 }
 ```
 
 **Response (SSE Stream):**
 ```
-data: {"type": "text", "content": "Python ist "}
-data: {"type": "text", "content": "eine Programmiersprache..."}
+data: {"type": "text", "content": "Python is "}
+data: {"type": "text", "content": "a programming language..."}
 data: {"type": "done", "session_id": "abc123"}
 ```
 
@@ -98,13 +98,13 @@ GET /chat/conversations/{conversation_id}
     {
       "id": "msg1",
       "role": "user",
-      "content": "Hallo!",
+      "content": "Hello!",
       "created_at": "2024-01-15T10:30:00Z"
     },
     {
       "id": "msg2",
       "role": "assistant",
-      "content": "Hallo! Wie kann ich dir helfen?",
+      "content": "Hello! How can I help you?",
       "created_at": "2024-01-15T10:30:01Z"
     }
   ]
@@ -128,7 +128,7 @@ DELETE /chat/conversations/{conversation_id}
 
 #### Approve Tool
 
-Genehmigt eine Tool-Ausführung.
+Approves a tool execution.
 
 ```http
 POST /tools/approve
@@ -146,9 +146,9 @@ Content-Type: application/json
 ```
 
 **Decision Options:**
-- `once` - Einmal erlauben
-- `session` - Für die gesamte Session erlauben
-- `never` - Dauerhaft blockieren
+- `once` - Allow once
+- `session` - Allow for the entire session
+- `never` - Block permanently
 
 ### Audit
 
@@ -186,11 +186,11 @@ GET /audit?session_id=abc123&event_type=tool_executed&limit=100&offset=0
 ```
 
 **Event Types:**
-- `tool_requested` - Tool wurde angefordert
-- `tool_approved` - Tool wurde genehmigt
-- `tool_rejected` - Tool wurde abgelehnt
-- `tool_executed` - Tool wurde ausgeführt
-- `tool_failed` - Tool-Ausführung fehlgeschlagen
+- `tool_requested` - Tool was requested
+- `tool_approved` - Tool was approved
+- `tool_rejected` - Tool was rejected
+- `tool_executed` - Tool was executed
+- `tool_failed` - Tool execution failed
 
 #### Get Audit Stats
 
@@ -298,7 +298,7 @@ GET /settings/health
 
 ## Error Responses
 
-Alle Endpoints können folgende Fehler zurückgeben:
+All endpoints can return the following errors:
 
 ```json
 {
@@ -308,17 +308,17 @@ Alle Endpoints können folgende Fehler zurückgeben:
 
 | Status Code | Description |
 |-------------|-------------|
-| 400 | Bad Request - Ungültige Parameter |
-| 404 | Not Found - Ressource nicht gefunden |
+| 400 | Bad Request - Invalid parameters |
+| 404 | Not Found - Resource not found |
 | 500 | Internal Server Error |
 
 ## Rate Limiting
 
-Aktuell kein Rate Limiting implementiert. Für Production wird empfohlen, Rate Limiting über einen Reverse Proxy (nginx, Traefik) zu konfigurieren.
+Currently no rate limiting implemented. For production, it is recommended to configure rate limiting via a reverse proxy (nginx, Traefik).
 
 ## WebSocket
 
-Für Real-Time Tool Approval ist ein WebSocket-Endpoint geplant:
+A WebSocket endpoint for real-time tool approval is planned:
 
 ```
 ws://localhost:8000/ws/{session_id}

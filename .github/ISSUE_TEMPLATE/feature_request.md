@@ -1,6 +1,6 @@
 ---
 name: Feature Request
-about: Schlage ein neues Feature vor
+about: Suggest a new feature
 title: '[FEATURE] '
 labels: enhancement
 assignees: ''
@@ -8,26 +8,26 @@ assignees: ''
 
 ## Problem
 
-Beschreibe das Problem, das du lösen möchtest.
+Describe the problem you want to solve.
 
-**Beispiel**: Ich möchte gerne [...], aber aktuell ist es nicht möglich, weil [...]
+**Example**: I would like to [...], but currently it is not possible because [...]
 
-## Vorgeschlagene Lösung
+## Proposed Solution
 
-Beschreibe deine gewünschte Lösung.
+Describe your desired solution.
 
-## Alternativen
+## Alternatives
 
-Welche Alternativen hast du in Betracht gezogen?
+What alternatives have you considered?
 
-## Zusätzlicher Kontext
+## Additional Context
 
-- Screenshots, Mockups
-- Links zu ähnlichen Features in anderen Tools
-- Sonstige Informationen
+- Screenshots, mockups
+- Links to similar features in other tools
+- Other information
 
-## Checkliste
+## Checklist
 
-- [ ] Ich habe geprüft, dass dieses Feature noch nicht existiert
-- [ ] Ich habe geprüft, dass kein ähnliches Issue existiert
-- [ ] Dieses Feature passt zur Vision von Axon (kontrollierte, sichere AI)
+- [ ] I have verified that this feature does not already exist
+- [ ] I have verified that no similar issue exists
+- [ ] This feature fits the vision of Axon (controlled, secure AI)

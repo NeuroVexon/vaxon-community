@@ -1,59 +1,59 @@
 # Installation
 
-Diese Anleitung beschreibt die Installation von Axon by NeuroVexon.
+This guide describes the installation of Axon by NeuroVexon.
 
-## Voraussetzungen
+## Prerequisites
 
-### Für Docker (empfohlen)
+### For Docker (recommended)
 
 - Docker 20.10+
 - Docker Compose 2.0+
-- 4GB RAM (8GB empfohlen)
-- 10GB freier Speicherplatz
+- 4GB RAM (8GB recommended)
+- 10GB free disk space
 
-### Für manuelle Installation
+### For Manual Installation
 
 - Python 3.11+
 - Node.js 18+
 - npm 9+
 - SQLite 3
 
-## Option 1: Docker (Empfohlen)
+## Option 1: Docker (Recommended)
 
-Die einfachste Methode zur Installation.
+The simplest method for installation.
 
 ```bash
-# 1. Repository klonen
-git clone https://github.com/neurovexon/axon-community.git
+# 1. Clone repository
+git clone https://github.com/NeuroVexon/axon-community.git
 cd axon-community
 
-# 2. Konfiguration erstellen
+# 2. Create configuration
 cp .env.example .env
 
-# 3. Container starten
+# 3. Start containers
 docker-compose up -d
 
-# 4. Ollama Model laden (einmalig)
+# 4. Pull Ollama model (one-time)
 docker exec axon-ollama ollama pull llama3.1:8b
 
-# 5. Öffne im Browser
+# 5. Open in browser
 # http://localhost:3000
 ```
 
 ### Docker Compose Services
 
-| Service | Port | Beschreibung |
-|---------|------|--------------|
+| Service | Port | Description |
+|---------|------|-------------|
 | frontend | 3000 | React UI |
 | backend | 8000 | FastAPI Server |
-| ollama | 11434 | Lokales LLM |
+| ollama | 11434 | Local LLM |
 
-### GPU-Support (NVIDIA)
+### GPU Support (NVIDIA)
 
-Für GPU-Beschleunigung mit Ollama:
+For GPU acceleration with Ollama:
 
 ```yaml
-# In docker-compose.yml, bei ollama service:
+# In docker-compose.yml, at the ollama service:
 deploy:
   resources:
     reservations:
@@ -63,66 +63,66 @@ deploy:
           capabilities: [gpu]
 ```
 
-## Option 2: Manuelle Installation
+## Option 2: Manual Installation
 
 ### Backend
 
 ```bash
-# 1. In Backend-Verzeichnis wechseln
+# 1. Navigate to backend directory
 cd backend
 
-# 2. Virtual Environment erstellen
+# 2. Create virtual environment
 python -m venv venv
 
-# 3. Aktivieren
+# 3. Activate
 # Windows:
 venv\Scripts\activate
 # Linux/Mac:
 source venv/bin/activate
 
-# 4. Dependencies installieren
+# 4. Install dependencies
 pip install -r requirements.txt
 
-# 5. Konfiguration
+# 5. Configuration
 cp ../.env.example .env
-# .env bearbeiten und anpassen
+# Edit .env and customize
 
-# 6. Server starten
+# 6. Start server
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### Frontend
 
 ```bash
-# 1. In Frontend-Verzeichnis wechseln
+# 1. Navigate to frontend directory
 cd frontend
 
-# 2. Dependencies installieren
+# 2. Install dependencies
 npm install
 
-# 3. Development Server starten
+# 3. Start development server
 npm start
 
-# Oder Production Build:
+# Or production build:
 npm run build
 ```
 
-### Ollama (für lokale LLMs)
+### Ollama (for local LLMs)
 
 ```bash
 # Linux/Mac
 curl -fsSL https://ollama.com/install.sh | sh
 
 # Windows
-# Download von https://ollama.com/download
+# Download from https://ollama.com/download
 
-# Model laden
+# Pull model
 ollama pull llama3.1:8b
 ```
 
-## Konfiguration
+## Configuration
 
-### Umgebungsvariablen (.env)
+### Environment Variables (.env)
 
 ```env
 # LLM Provider: ollama, claude, openai
@@ -138,13 +138,13 @@ ANTHROPIC_API_KEY=sk-ant-...
 # OpenAI API (optional)
 OPENAI_API_KEY=sk-...
 
-# Security (WICHTIG: In Production ändern!)
+# Security (IMPORTANT: Change in production!)
 SECRET_KEY=change-me-in-production
 ```
 
-### LLM Provider wechseln
+### Switch LLM Provider
 
-**Ollama (lokal, kostenlos):**
+**Ollama (local, free):**
 ```env
 LLM_PROVIDER=ollama
 OLLAMA_MODEL=llama3.1:8b
@@ -164,40 +164,40 @@ OPENAI_API_KEY=sk-...
 OPENAI_MODEL=gpt-4o
 ```
 
-## Verifizierung
+## Verification
 
-Nach der Installation:
+After installation:
 
-1. Öffne http://localhost:3000
-2. Sende eine Test-Nachricht: "Hallo!"
-3. Teste ein Tool: "Liste alle Dateien im aktuellen Ordner"
-4. Genehmige das Tool im Modal
-5. Prüfe das Audit Log
+1. Open http://localhost:3000
+2. Send a test message: "Hello!"
+3. Test a tool: "List all files in the current directory"
+4. Approve the tool in the modal
+5. Check the audit log
 
 ## Troubleshooting
 
-### Backend startet nicht
+### Backend Won't Start
 
 ```bash
-# Logs prüfen
+# Check logs
 docker logs axon-backend
 
-# Oder bei manueller Installation:
+# Or for manual installation:
 cd backend
 python main.py
 ```
 
-### Ollama nicht erreichbar
+### Ollama Not Reachable
 
 ```bash
-# Status prüfen
+# Check status
 curl http://localhost:11434/api/tags
 
-# Ollama neu starten
+# Restart Ollama
 docker restart axon-ollama
 ```
 
-### Frontend Build-Fehler
+### Frontend Build Errors
 
 ```bash
 cd frontend
@@ -206,19 +206,19 @@ npm install
 npm start
 ```
 
-### Port bereits belegt
+### Port Already in Use
 
 ```bash
-# Ports ändern in docker-compose.yml oder .env
-# Oder bestehende Prozesse finden:
+# Change ports in docker-compose.yml or .env
+# Or find existing processes:
 # Windows:
 netstat -ano | findstr :3000
 # Linux:
 lsof -i :3000
 ```
 
-## Nächste Schritte
+## Next Steps
 
-- [Konfiguration](CONFIGURATION.md) - Detaillierte Einstellungen
-- [Tools](TOOLS.md) - Verfügbare Tools und ihre Verwendung
-- [Security](SECURITY.md) - Sicherheitsrichtlinien
+- [Configuration](CONFIGURATION.md) - Detailed settings
+- [Tools](TOOLS.md) - Available tools and their usage
+- [Security](SECURITY.md) - Security guidelines

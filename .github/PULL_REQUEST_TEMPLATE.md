@@ -1,44 +1,44 @@
-## Beschreibung
+## Description
 
-Beschreibe deine Änderungen kurz.
+Briefly describe your changes.
 
-## Art der Änderung
+## Type of Change
 
-- [ ] Bug Fix (non-breaking change, behebt ein Issue)
-- [ ] Neues Feature (non-breaking change, fügt Funktionalität hinzu)
-- [ ] Breaking Change (Fix oder Feature, das bestehende Funktionalität ändert)
-- [ ] Dokumentation
+- [ ] Bug Fix (non-breaking change that fixes an issue)
+- [ ] New Feature (non-breaking change that adds functionality)
+- [ ] Breaking Change (fix or feature that changes existing functionality)
+- [ ] Documentation
 - [ ] Refactoring
 - [ ] Tests
 
-## Zugehöriges Issue
+## Related Issue
 
 Fixes #(issue number)
 
-## Wie wurde getestet?
+## How Was This Tested?
 
-Beschreibe die Tests, die du durchgeführt hast.
+Describe the tests you performed.
 
 - [ ] Unit Tests
 - [ ] Integration Tests
-- [ ] Manuell getestet
+- [ ] Manually tested
 
-**Test-Umgebung:**
+**Test Environment:**
 - OS:
 - Python Version:
 - Node Version:
 
-## Checkliste
+## Checklist
 
-- [ ] Mein Code folgt den Code-Standards dieses Projekts
-- [ ] Ich habe meinen Code selbst reviewed
-- [ ] Ich habe Kommentare hinzugefügt, wo nötig
-- [ ] Ich habe die Dokumentation aktualisiert
-- [ ] Meine Änderungen erzeugen keine neuen Warnings
-- [ ] Ich habe Tests hinzugefügt, die beweisen, dass mein Fix/Feature funktioniert
-- [ ] Neue und bestehende Unit Tests bestehen lokal
-- [ ] Abhängige Änderungen wurden gemerged und veröffentlicht
+- [ ] My code follows the code standards of this project
+- [ ] I have reviewed my own code
+- [ ] I have added comments where necessary
+- [ ] I have updated the documentation
+- [ ] My changes do not produce new warnings
+- [ ] I have added tests that prove my fix/feature works
+- [ ] New and existing unit tests pass locally
+- [ ] Dependent changes have been merged and published
 
-## Screenshots (falls relevant)
+## Screenshots (if applicable)
 
-Füge Screenshots der UI-Änderungen hinzu.
+Add screenshots of UI changes.

@@ -78,7 +78,9 @@ async def send_message(
         if not conversation:
             raise HTTPException(status_code=404, detail="Conversation not found")
     else:
-        conversation = Conversation(user_id=current_user.id, system_prompt=request.system_prompt)
+        conversation = Conversation(
+            user_id=current_user.id, system_prompt=request.system_prompt
+        )
         db.add(conversation)
         await db.flush()
 
@@ -151,7 +153,9 @@ async def stream_message(
         if not conversation:
             raise HTTPException(status_code=404, detail="Conversation not found")
     else:
-        conversation = Conversation(user_id=current_user.id, system_prompt=request.system_prompt)
+        conversation = Conversation(
+            user_id=current_user.id, system_prompt=request.system_prompt
+        )
         db.add(conversation)
         await db.flush()
 
@@ -238,7 +242,9 @@ async def agent_message(
         if not conversation:
             raise HTTPException(status_code=404, detail="Conversation not found")
     else:
-        conversation = Conversation(user_id=current_user.id, system_prompt=request.system_prompt)
+        conversation = Conversation(
+            user_id=current_user.id, system_prompt=request.system_prompt
+        )
         db.add(conversation)
         await db.flush()
 

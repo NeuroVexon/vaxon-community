@@ -53,9 +53,11 @@ def _auto_migrate_columns(conn):
                 default = ""
                 if col.default is not None and col.default.is_scalar:
                     default = f" DEFAULT {col.default.arg!r}"
-                conn.execute(text(
-                    f"ALTER TABLE {table.name} ADD COLUMN {col.name} {col_type} {nullable}{default}"
-                ))
+                conn.execute(
+                    text(
+                        f"ALTER TABLE {table.name} ADD COLUMN {col.name} {col_type} {nullable}{default}"
+                    )
+                )
 
 
 async def get_db() -> AsyncSession:

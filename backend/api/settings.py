@@ -80,7 +80,10 @@ def mask_api_key(key: Optional[str]) -> str:
 
 
 @router.get("")
-async def get_settings(current_user: User = Depends(get_current_active_user), db: AsyncSession = Depends(get_db)):
+async def get_settings(
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
     """Get current settings"""
     result = await db.execute(select(Settings))
     db_settings = {s.key: s.value for s in result.scalars().all()}
@@ -149,7 +152,11 @@ async def get_settings(current_user: User = Depends(get_current_active_user), db
 
 
 @router.put("")
-async def update_settings(update: SettingsUpdate, current_user: User = Depends(get_current_active_user), db: AsyncSession = Depends(get_db)):
+async def update_settings(
+    update: SettingsUpdate,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
     """Update settings"""
     updates = update.model_dump(exclude_none=True)
 
@@ -171,7 +178,11 @@ async def update_settings(update: SettingsUpdate, current_user: User = Depends(g
 
 
 @router.delete("/api-key/{key_name}")
-async def delete_api_key(key_name: str, current_user: User = Depends(get_current_active_user), db: AsyncSession = Depends(get_db)):
+async def delete_api_key(
+    key_name: str,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
     """Delete a stored API key or token"""
     allowed_keys = {
         "anthropic_api_key",
@@ -200,7 +211,11 @@ async def delete_api_key(key_name: str, current_user: User = Depends(get_current
 
 
 @router.post("/email/test")
-async def test_email_connection(request: Request, current_user: User = Depends(get_current_active_user), db: AsyncSession = Depends(get_db)):
+async def test_email_connection(
+    request: Request,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
     """E-Mail Verbindung testen"""
     set_language(get_lang_from_header(request.headers.get("accept-language")))
     from integrations.email import get_email_client_from_settings

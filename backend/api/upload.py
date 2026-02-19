@@ -121,7 +121,10 @@ async def list_documents(
 
 @router.delete("/{doc_id}")
 async def delete_document(
-    doc_id: str, request: Request, current_user: User = Depends(get_current_active_user), db: AsyncSession = Depends(get_db)
+    doc_id: str,
+    request: Request,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
 ):
     """Dokument loeschen"""
     set_language(get_lang_from_header(request.headers.get("accept-language")))

@@ -50,7 +50,9 @@ async def list_tools(current_user: User = Depends(get_current_active_user)):
 
 
 @router.get("/{tool_name}")
-async def get_tool(tool_name: str, current_user: User = Depends(get_current_active_user)):
+async def get_tool(
+    tool_name: str, current_user: User = Depends(get_current_active_user)
+):
     """Get details for a specific tool"""
     tool = tool_registry.get(tool_name)
     if not tool:
@@ -133,14 +135,20 @@ async def revoke_permission(
 
 
 @router.post("/unblock")
-async def unblock_tool(tool: str, params: Optional[dict] = None, current_user: User = Depends(get_current_active_user)):
+async def unblock_tool(
+    tool: str,
+    params: Optional[dict] = None,
+    current_user: User = Depends(get_current_active_user),
+):
     """Remove a tool from the blocklist"""
     permission_manager.unblock(tool, params)
     return {"status": "unblocked", "tool": tool}
 
 
 @router.get("/permissions/{session_id}")
-async def get_session_permissions(session_id: str, current_user: User = Depends(get_current_active_user)):
+async def get_session_permissions(
+    session_id: str, current_user: User = Depends(get_current_active_user)
+):
     """Get all permissions for a session (debug)"""
     permissions = permission_manager.get_session_permissions(session_id)
     return {"session_id": session_id, "permissions": permissions}

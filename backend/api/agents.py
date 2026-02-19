@@ -57,7 +57,10 @@ def _agent_to_dict(agent) -> dict:
 
 
 @router.get("")
-async def list_agents(current_user: User = Depends(get_current_active_user), db: AsyncSession = Depends(get_db)):
+async def list_agents(
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
     """Alle Agents auflisten"""
     manager = AgentManager(db)
     agents = await manager.list_agents()
@@ -65,7 +68,11 @@ async def list_agents(current_user: User = Depends(get_current_active_user), db:
 
 
 @router.get("/{agent_id}")
-async def get_agent(agent_id: str, current_user: User = Depends(get_current_active_user), db: AsyncSession = Depends(get_db)):
+async def get_agent(
+    agent_id: str,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
     """Agent Details"""
     manager = AgentManager(db)
     agent = await manager.get_agent(agent_id)
@@ -75,7 +82,11 @@ async def get_agent(agent_id: str, current_user: User = Depends(get_current_acti
 
 
 @router.post("")
-async def create_agent(data: AgentCreate, current_user: User = Depends(get_current_active_user), db: AsyncSession = Depends(get_db)):
+async def create_agent(
+    data: AgentCreate,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
     """Neuen Agent erstellen"""
     manager = AgentManager(db)
     agent = await manager.create_agent(
@@ -93,7 +104,10 @@ async def create_agent(data: AgentCreate, current_user: User = Depends(get_curre
 
 @router.put("/{agent_id}")
 async def update_agent(
-    agent_id: str, data: AgentUpdate, current_user: User = Depends(get_current_active_user), db: AsyncSession = Depends(get_db)
+    agent_id: str,
+    data: AgentUpdate,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
 ):
     """Agent bearbeiten"""
     manager = AgentManager(db)
@@ -105,7 +119,11 @@ async def update_agent(
 
 
 @router.delete("/{agent_id}")
-async def delete_agent(agent_id: str, current_user: User = Depends(get_current_active_user), db: AsyncSession = Depends(get_db)):
+async def delete_agent(
+    agent_id: str,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
     """Agent loeschen"""
     manager = AgentManager(db)
     deleted = await manager.delete_agent(agent_id)

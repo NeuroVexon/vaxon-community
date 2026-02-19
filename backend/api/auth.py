@@ -33,6 +33,7 @@ EMAIL_RE = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
 
 # --- Schemas ---
 
+
 class RegisterRequest(BaseModel):
     email: str
     password: str
@@ -57,6 +58,7 @@ class AuthStatusResponse(BaseModel):
 
 # --- Helpers ---
 
+
 def _user_dict(user: User) -> dict:
     return {
         "id": user.id,
@@ -79,6 +81,7 @@ def _create_tokens(user: User) -> dict:
 
 
 # --- Endpoints ---
+
 
 @router.get("/status")
 async def auth_status(db: AsyncSession = Depends(get_db)) -> AuthStatusResponse:

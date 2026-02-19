@@ -68,7 +68,11 @@ async def list_memories(
 
 
 @router.post("")
-async def create_memory(data: MemoryCreate, current_user: User = Depends(get_current_active_user), db: AsyncSession = Depends(get_db)):
+async def create_memory(
+    data: MemoryCreate,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
     """Memory erstellen oder aktualisieren (Upsert nach key)"""
     if not data.key.strip():
         raise HTTPException(status_code=400, detail="Key darf nicht leer sein")
@@ -93,7 +97,11 @@ async def create_memory(data: MemoryCreate, current_user: User = Depends(get_cur
 
 
 @router.get("/{memory_id}")
-async def get_memory(memory_id: str, current_user: User = Depends(get_current_active_user), db: AsyncSession = Depends(get_db)):
+async def get_memory(
+    memory_id: str,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
     """Einzelnes Memory abrufen"""
     manager = MemoryManager(db)
     memory = await manager.get_by_id(memory_id)
@@ -113,7 +121,10 @@ async def get_memory(memory_id: str, current_user: User = Depends(get_current_ac
 
 @router.put("/{memory_id}")
 async def update_memory(
-    memory_id: str, data: MemoryUpdate, current_user: User = Depends(get_current_active_user), db: AsyncSession = Depends(get_db)
+    memory_id: str,
+    data: MemoryUpdate,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
 ):
     """Memory aktualisieren"""
     manager = MemoryManager(db)
@@ -140,7 +151,11 @@ async def update_memory(
 
 
 @router.delete("/{memory_id}")
-async def delete_memory(memory_id: str, current_user: User = Depends(get_current_active_user), db: AsyncSession = Depends(get_db)):
+async def delete_memory(
+    memory_id: str,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
     """Memory löschen"""
     manager = MemoryManager(db)
     deleted = await manager.remove(memory_id)
@@ -151,7 +166,10 @@ async def delete_memory(memory_id: str, current_user: User = Depends(get_current
 
 
 @router.delete("")
-async def clear_all_memories(current_user: User = Depends(get_current_active_user), db: AsyncSession = Depends(get_db)):
+async def clear_all_memories(
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
     """Alle Memories löschen"""
     manager = MemoryManager(db)
     count = await manager.clear_all()

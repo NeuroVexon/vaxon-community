@@ -22,7 +22,7 @@ from core.security import (
     decode_token,
 )
 from core.dependencies import get_current_active_user
-from core.i18n import t, get_lang_from_header
+from core.i18n import t
 
 logger = logging.getLogger(__name__)
 

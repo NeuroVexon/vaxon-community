@@ -11,7 +11,7 @@ from typing import Optional
 from db.database import get_db
 from db.models import Settings
 from db.models import User
-from core.dependencies import get_current_active_user
+from core.dependencies import get_current_active_user, get_admin_user
 from core.config import settings as app_settings, LLMProvider
 from core.security import encrypt_value, decrypt_value
 from llm.router import llm_router
@@ -154,10 +154,10 @@ async def get_settings(
 @router.put("")
 async def update_settings(
     update: SettingsUpdate,
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_admin_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Update settings"""
+    """Update settings (admin only)"""
     updates = update.model_dump(exclude_none=True)
 
     for key, value in updates.items():
@@ -174,13 +174,14 @@ async def update_settings(
             db.add(setting)
 
     await db.commit()
-    return {"status": "updated", "changes": updates}
+    # Don't return raw values — only confirm which keys were changed
+    return {"status": "updated", "changes": list(updates.keys())}
 
 
 @router.delete("/api-key/{key_name}")
 async def delete_api_key(
     key_name: str,
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_admin_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Delete a stored API key or token"""
@@ -213,7 +214,7 @@ async def delete_api_key(
 @router.post("/email/test")
 async def test_email_connection(
     request: Request,
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_admin_user),
     db: AsyncSession = Depends(get_db),
 ):
     """E-Mail Verbindung testen"""

@@ -2,7 +2,7 @@
  * Axon by NeuroVexon - API Service
  */
 
-import type { AuthTokens, AuthUser, AuthStatus } from '../types'
+import type { AuthTokens, AuthUser, AuthStatus, Settings, AuditEntry, Conversation, ChatResponse } from '../types'
 
 const API_BASE = '/api/v1'
 
@@ -104,78 +104,6 @@ async function authFetch(input: RequestInfo | URL, init?: RequestInit): Promise<
   }
 
   return response
-}
-
-// --- Interfaces ---
-
-interface ChatResponse {
-  session_id: string
-  message: string
-  tool_calls?: Array<{
-    id: string
-    name: string
-    parameters: Record<string, unknown>
-  }>
-}
-
-interface Conversation {
-  id: string
-  title: string | null
-  created_at: string
-  updated_at: string
-}
-
-interface AuditEntry {
-  id: string
-  session_id: string
-  timestamp: string
-  event_type: string
-  tool_name: string | null
-  tool_params: Record<string, unknown> | null
-  result: string | null
-  error: string | null
-  user_decision: string | null
-  execution_time_ms: number | null
-}
-
-interface Settings {
-  app_name: string
-  app_version: string
-  llm_provider: string
-  theme: string
-  system_prompt?: string
-  available_providers: string[]
-  anthropic_api_key_set?: boolean
-  anthropic_api_key_masked?: string
-  openai_api_key_set?: boolean
-  openai_api_key_masked?: string
-  gemini_api_key_set?: boolean
-  gemini_api_key_masked?: string
-  groq_api_key_set?: boolean
-  groq_api_key_masked?: string
-  openrouter_api_key_set?: boolean
-  openrouter_api_key_masked?: string
-  ollama_model?: string
-  claude_model?: string
-  openai_model?: string
-  gemini_model?: string
-  groq_model?: string
-  openrouter_model?: string
-  email_enabled?: boolean
-  imap_host?: string
-  imap_port?: string
-  imap_user?: string
-  imap_password_set?: boolean
-  smtp_host?: string
-  smtp_port?: string
-  smtp_user?: string
-  smtp_password_set?: boolean
-  smtp_from?: string
-  telegram_enabled?: boolean
-  telegram_bot_token_set?: boolean
-  discord_enabled?: boolean
-  discord_bot_token_set?: boolean
-  language?: string
 }
 
 export const api = {

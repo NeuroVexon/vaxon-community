@@ -2,6 +2,8 @@
 Axon by NeuroVexon - Configuration
 """
 
+import secrets
+
 from pydantic_settings import BaseSettings
 from typing import Optional
 from enum import Enum
@@ -56,8 +58,8 @@ class Settings(BaseSettings):
     openrouter_api_key: Optional[str] = None
     openrouter_model: str = "anthropic/claude-sonnet-4"
 
-    # Security
-    secret_key: str = "change-me-in-production-use-openssl-rand-hex-32"
+    # Security — auto-generated if not set via env
+    secret_key: str = ""
 
     # JWT Authentication
     jwt_secret: Optional[str] = None  # Falls leer, faellt auf secret_key zurueck
@@ -95,7 +97,7 @@ class Settings(BaseSettings):
     discord_allowed_channels: str = ""
     discord_allowed_users: str = ""
 
-    # Shell Whitelist
+    # Shell Whitelist — safe read-only commands only
     shell_whitelist: list[str] = [
         "ls",
         "dir",
@@ -104,8 +106,6 @@ class Settings(BaseSettings):
         "head",
         "tail",
         "wc",
-        "grep",
-        "find",
         "date",
         "pwd",
         "echo",
@@ -123,4 +123,11 @@ class Settings(BaseSettings):
         env_file_encoding = "utf-8"
 
 
-settings = Settings()
+def _init_settings() -> Settings:
+    s = Settings()
+    if not s.secret_key:
+        s.secret_key = secrets.token_hex(32)
+    return s
+
+
+settings = _init_settings()

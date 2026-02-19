@@ -44,6 +44,7 @@ class Conversation(Base):
     __tablename__ = "conversations"
 
     id = Column(String(36), primary_key=True, default=generate_uuid)
+    user_id = Column(String(36), ForeignKey("users.id"), nullable=True, index=True)
     title = Column(String(255), nullable=True)
     system_prompt = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)

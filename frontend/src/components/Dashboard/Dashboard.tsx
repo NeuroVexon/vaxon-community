@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useTranslation } from 'react-i18next'
+import type { View } from '../../types'
 
 interface Overview {
   conversations: number
@@ -40,8 +41,6 @@ interface TimelineEntry {
   conversations: number
   tool_calls: number
 }
-
-type View = 'dashboard' | 'chat' | 'audit' | 'memory' | 'skills' | 'agents' | 'scheduler' | 'workflows' | 'settings'
 
 interface DashboardProps {
   onNavigate?: (view: View) => void

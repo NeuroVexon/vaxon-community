@@ -1,6 +1,5 @@
 import { createContext, useState, useCallback, type ReactNode } from 'react'
-import { Message } from '../components/Chat/MessageList'
-import { ToolApprovalRequest } from '../components/Tools/ToolApprovalModal'
+import type { Message, ToolApprovalRequest } from '../types'
 import { api } from '../services/api'
 import { useTranslation } from 'react-i18next'
 

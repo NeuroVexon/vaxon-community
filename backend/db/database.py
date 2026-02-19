@@ -30,9 +30,32 @@ Base = declarative_base()
 
 
 async def init_db():
-    """Initialize database tables"""
+    """Initialize database tables and run lightweight migrations"""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        # Auto-add missing columns for SQLite (no ALTER COLUMN support)
+        await conn.run_sync(_auto_migrate_columns)
+
+
+def _auto_migrate_columns(conn):
+    """Add missing columns to existing tables (SQLite-compatible)"""
+    from sqlalchemy import inspect, text
+
+    inspector = inspect(conn)
+    for table in Base.metadata.sorted_tables:
+        if not inspector.has_table(table.name):
+            continue
+        existing = {c["name"] for c in inspector.get_columns(table.name)}
+        for col in table.columns:
+            if col.name not in existing:
+                col_type = col.type.compile(conn.dialect)
+                nullable = "NULL" if col.nullable else "NOT NULL"
+                default = ""
+                if col.default is not None and col.default.is_scalar:
+                    default = f" DEFAULT {col.default.arg!r}"
+                conn.execute(text(
+                    f"ALTER TABLE {table.name} ADD COLUMN {col.name} {col_type} {nullable}{default}"
+                ))
 
 
 async def get_db() -> AsyncSession:

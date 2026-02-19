@@ -9,13 +9,7 @@ import {
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useTranslation } from 'react-i18next'
-
-export interface ToolApprovalRequest {
-  tool: string
-  params: Record<string, unknown>
-  description: string
-  risk_level: 'low' | 'medium' | 'high' | 'critical'
-}
+import type { ToolApprovalRequest } from '../../types'
 
 interface ToolApprovalModalProps {
   request: ToolApprovalRequest

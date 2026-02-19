@@ -16,17 +16,11 @@ import {
 import clsx from 'clsx'
 import { api } from '../../services/api'
 import { useTranslation } from 'react-i18next'
-
-interface Conversation {
-  id: string
-  title: string | null
-  created_at: string
-  updated_at: string
-}
+import type { Conversation, View } from '../../types'
 
 interface SidebarProps {
-  currentView: 'dashboard' | 'chat' | 'audit' | 'memory' | 'skills' | 'agents' | 'scheduler' | 'workflows' | 'settings'
-  onViewChange: (view: 'dashboard' | 'chat' | 'audit' | 'memory' | 'skills' | 'agents' | 'scheduler' | 'workflows' | 'settings') => void
+  currentView: View
+  onViewChange: (view: View) => void
   currentSession: string | null
   onNewChat: () => void
   onSelectConversation?: (id: string) => void

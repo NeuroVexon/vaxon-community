@@ -11,8 +11,8 @@ from typing import Optional
 
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
+import jwt
 from cryptography.fernet import Fernet
-from jose import JWTError, jwt
 
 from .config import settings
 
@@ -67,7 +67,7 @@ def decode_token(token: str) -> Optional[dict]:
             token, _get_jwt_secret(), algorithms=[settings.jwt_algorithm]
         )
         return payload
-    except JWTError:
+    except (jwt.PyJWTError, Exception):
         return None
 
 

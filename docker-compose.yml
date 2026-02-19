@@ -23,7 +23,7 @@ services:
       - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.1:8b}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
-      - SECRET_KEY=${SECRET_KEY:-axon-dev-secret-change-in-production}
+      - SECRET_KEY=${SECRET_KEY:-}
       - JWT_SECRET=${JWT_SECRET:-}
       - REGISTRATION_ENABLED=${REGISTRATION_ENABLED:-true}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}

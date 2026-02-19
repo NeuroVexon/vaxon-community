@@ -11,19 +11,7 @@ import {
 import clsx from 'clsx'
 import { useTranslation } from 'react-i18next'
 import { api } from '../../services/api'
-
-interface AuditEntry {
-  id: string
-  session_id: string
-  timestamp: string
-  event_type: string
-  tool_name: string | null
-  tool_params: Record<string, unknown> | null
-  result: string | null
-  error: string | null
-  user_decision: string | null
-  execution_time_ms: number | null
-}
+import type { AuditEntry } from '../../types'
 
 export default function AuditDashboard() {
   const { t } = useTranslation()

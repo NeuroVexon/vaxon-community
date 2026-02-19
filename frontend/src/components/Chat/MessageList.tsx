@@ -1,18 +1,6 @@
 import { User, Bot, Terminal, AlertCircle, CheckCircle } from 'lucide-react'
 import clsx from 'clsx'
-
-export interface Message {
-  id: string
-  role: 'user' | 'assistant' | 'system' | 'tool'
-  content: string
-  timestamp: Date
-  toolInfo?: {
-    name: string
-    status: 'pending' | 'approved' | 'rejected' | 'executed' | 'failed'
-    result?: string
-    error?: string
-  }
-}
+import type { Message } from '../../types'
 
 interface MessageListProps {
   messages: Message[]

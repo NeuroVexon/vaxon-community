@@ -9,6 +9,7 @@ import SchedulerView from './components/Scheduler/SchedulerView'
 import WorkflowsView from './components/Workflows/WorkflowsView'
 import Dashboard from './components/Dashboard/Dashboard'
 import LoginPage from './components/Auth/LoginPage'
+import ErrorBoundary from './components/ErrorBoundary'
 import { ChatProvider } from './contexts/ChatContext'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { useChat } from './hooks/useChat'
@@ -16,49 +17,7 @@ import { api } from './services/api'
 import { Settings as SettingsIcon, Save, Loader2, Check, Key, Eye, EyeOff, Mail, CheckCircle, XCircle, Globe, MessageCircle, Hash, Trash2 } from 'lucide-react'
 import clsx from 'clsx'
 import { useTranslation } from 'react-i18next'
-
-type View = 'dashboard' | 'chat' | 'audit' | 'memory' | 'skills' | 'agents' | 'scheduler' | 'workflows' | 'settings'
-
-interface Settings {
-  app_name: string
-  app_version: string
-  llm_provider: string
-  theme: string
-  system_prompt?: string
-  available_providers: string[]
-  anthropic_api_key_set?: boolean
-  anthropic_api_key_masked?: string
-  openai_api_key_set?: boolean
-  openai_api_key_masked?: string
-  gemini_api_key_set?: boolean
-  gemini_api_key_masked?: string
-  groq_api_key_set?: boolean
-  groq_api_key_masked?: string
-  openrouter_api_key_set?: boolean
-  openrouter_api_key_masked?: string
-  ollama_model?: string
-  claude_model?: string
-  openai_model?: string
-  gemini_model?: string
-  groq_model?: string
-  openrouter_model?: string
-  // E-Mail
-  email_enabled?: boolean
-  imap_host?: string
-  imap_port?: string
-  imap_user?: string
-  imap_password_set?: boolean
-  smtp_host?: string
-  smtp_port?: string
-  smtp_user?: string
-  smtp_password_set?: boolean
-  smtp_from?: string
-  // Telegram / Discord
-  telegram_enabled?: boolean
-  telegram_bot_token_set?: boolean
-  discord_enabled?: boolean
-  discord_bot_token_set?: boolean
-}
+import type { Settings, View } from './types'
 
 function SettingsView() {
   const { t, i18n } = useTranslation()
@@ -874,9 +833,11 @@ function AuthenticatedApp() {
 
 function App() {
   return (
-    <AuthProvider>
-      <AuthGate />
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <AuthGate />
+      </AuthProvider>
+    </ErrorBoundary>
   )
 }
 

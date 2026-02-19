@@ -78,7 +78,7 @@ async def send_message(
         if not conversation:
             raise HTTPException(status_code=404, detail="Conversation not found")
     else:
-        conversation = Conversation(system_prompt=request.system_prompt)
+        conversation = Conversation(user_id=current_user.id, system_prompt=request.system_prompt)
         db.add(conversation)
         await db.flush()
 
@@ -151,7 +151,7 @@ async def stream_message(
         if not conversation:
             raise HTTPException(status_code=404, detail="Conversation not found")
     else:
-        conversation = Conversation(system_prompt=request.system_prompt)
+        conversation = Conversation(user_id=current_user.id, system_prompt=request.system_prompt)
         db.add(conversation)
         await db.flush()
 
@@ -238,7 +238,7 @@ async def agent_message(
         if not conversation:
             raise HTTPException(status_code=404, detail="Conversation not found")
     else:
-        conversation = Conversation(system_prompt=request.system_prompt)
+        conversation = Conversation(user_id=current_user.id, system_prompt=request.system_prompt)
         db.add(conversation)
         await db.flush()
 
@@ -443,9 +443,12 @@ async def list_conversations(
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """List recent conversations"""
+    """List recent conversations for the current user"""
     result = await db.execute(
-        select(Conversation).order_by(Conversation.updated_at.desc()).limit(limit)
+        select(Conversation)
+        .where(Conversation.user_id == current_user.id)
+        .order_by(Conversation.updated_at.desc())
+        .limit(min(limit, 500))
     )
     conversations = result.scalars().all()
     return [
@@ -472,6 +475,7 @@ async def get_conversation(
         select(Conversation)
         .options(selectinload(Conversation.messages))
         .where(Conversation.id == conversation_id)
+        .where(Conversation.user_id == current_user.id)
     )
     conversation = result.scalar_one_or_none()
 
@@ -501,8 +505,13 @@ async def delete_conversation(
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Delete a conversation"""
-    conversation = await db.get(Conversation, conversation_id)
+    """Delete a conversation (only own conversations)"""
+    result = await db.execute(
+        select(Conversation)
+        .where(Conversation.id == conversation_id)
+        .where(Conversation.user_id == current_user.id)
+    )
+    conversation = result.scalar_one_or_none()
     if not conversation:
         raise HTTPException(status_code=404, detail="Conversation not found")
 

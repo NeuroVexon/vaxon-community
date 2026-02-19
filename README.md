@@ -70,6 +70,7 @@ AI agents today can read files, browse the web, execute shell commands, and send
 | **Skills System** | Community plugins with hash-based security gate |
 | **Telegram & Discord** | Messenger bots with inline approval buttons |
 | **CLI** | Terminal control with SSE streaming, pipe support, and scripting |
+| **JWT Authentication** | Argon2id password hashing, access + refresh tokens, single-user admin mode |
 | **Encrypted API Keys** | Fernet encryption in the database |
 | **Docker Deployment** | One command to start everything |
 | **Dark Theme** | Modern UI with cyan accents |
@@ -90,7 +91,7 @@ docker-compose up -d
 docker exec axon-ollama ollama pull llama3.1:8b
 ```
 
-**Open http://localhost:3000**
+**Open http://localhost:3000** — create your admin account on first launch.
 
 ### Manual Installation
 
@@ -211,6 +212,7 @@ See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for all options.
 
 ## Security
 
+- **JWT Authentication** — Argon2id password hashing, access + refresh tokens, OAuth2-compatible flow
 - **Shell Whitelist** — Only predefined commands, chaining blocked
 - **File Restriction** — Write access limited to /outputs/, path traversal blocked
 - **URL Validation** — SSRF protection (localhost, internal IPs, AWS IMDS blocked)

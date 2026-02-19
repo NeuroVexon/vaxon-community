@@ -9,26 +9,30 @@ import secrets
 from datetime import datetime, timedelta
 from typing import Optional
 
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
 from cryptography.fernet import Fernet
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 
 from .config import settings
 
 logger = logging.getLogger(__name__)
 
-# Password hashing
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Argon2id hasher (recommended defaults)
+_ph = PasswordHasher()
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a password against its hash"""
-    return pwd_context.verify(plain_password, hashed_password)
+    """Verify a password against its Argon2 hash"""
+    try:
+        return _ph.verify(hashed_password, plain_password)
+    except VerifyMismatchError:
+        return False
 
 
 def get_password_hash(password: str) -> str:
-    """Hash a password using bcrypt"""
-    return pwd_context.hash(password)
+    """Hash a password using Argon2id"""
+    return _ph.hash(password)
 
 
 def _get_jwt_secret() -> str:

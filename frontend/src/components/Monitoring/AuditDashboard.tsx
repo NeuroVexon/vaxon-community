@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useTranslation } from 'react-i18next'
+import { api } from '../../services/api'
 
 interface AuditEntry {
   id: string
@@ -37,8 +38,7 @@ export default function AuditDashboard() {
   const loadAuditLogs = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/v1/audit?limit=100')
-      const data = await response.json()
+      const data = await api.getAuditLogs({ limit: 100 })
       setEntries(data)
     } catch (error) {
       console.error('Failed to load audit logs:', error)
@@ -47,7 +47,21 @@ export default function AuditDashboard() {
   }
 
   const exportCSV = async () => {
-    window.open('/api/v1/audit/export?format=csv', '_blank')
+    try {
+      const data = await api.getAuditLogs()
+      const header = ['id','session_id','timestamp','event_type','tool_name','tool_params','result','error','user_decision','execution_time_ms']
+      const rows = data.map(e => [e.id, e.session_id, e.timestamp, e.event_type, e.tool_name ?? '', JSON.stringify(e.tool_params ?? ''), e.result ?? '', e.error ?? '', e.user_decision ?? '', e.execution_time_ms ?? ''])
+      const csv = [header, ...rows].map(r => r.join(',')).join('\n')
+      const blob = new Blob([csv], { type: 'text/csv' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'axon_audit_log.csv'
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Failed to export audit logs:', error)
+    }
   }
 
   const filteredEntries = entries.filter(entry =>

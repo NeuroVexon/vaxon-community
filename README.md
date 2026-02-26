@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="assets/axon-logo.png" alt="AXON by NeuroVexon" width="420">
+  <img src="assets/vaxon-logo.png" alt="VAXON by NeuroVexon" width="420">
 </p>
 
-<h1 align="center">AXON</h1>
+<h1 align="center">VAXON</h1>
 
 <p align="center">
   <strong>Agentic AI — without losing control.</strong>
@@ -16,17 +16,17 @@
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/license-Apache%202.0-green" alt="License">
   </a>
-  <a href="https://github.com/NeuroVexon/axon-community/stargazers">
-    <img src="https://img.shields.io/github/stars/NeuroVexon/axon-community?style=social" alt="Stars">
+  <a href="https://github.com/NeuroVexon/vaxon-community/stargazers">
+    <img src="https://img.shields.io/github/stars/NeuroVexon/vaxon-community?style=social" alt="Stars">
   </a>
-  <a href="https://github.com/NeuroVexon/axon-community/actions/workflows/ci.yml">
-    <img src="https://github.com/NeuroVexon/axon-community/actions/workflows/ci.yml/badge.svg" alt="CI">
+  <a href="https://github.com/NeuroVexon/vaxon-community/actions/workflows/ci.yml">
+    <img src="https://github.com/NeuroVexon/vaxon-community/actions/workflows/ci.yml/badge.svg" alt="CI">
   </a>
   <img src="https://img.shields.io/badge/Made%20in-Germany-black?labelColor=DD0000&color=FFCC00" alt="Made in Germany">
 </p>
 
 <p align="center">
-  <a href="#-why-axon">Why AXON?</a> &bull;
+  <a href="#-why-vaxon">Why VAXON?</a> &bull;
   <a href="#-key-features">Features</a> &bull;
   <a href="#-quickstart">Quickstart</a> &bull;
   <a href="#-cli">CLI</a> &bull;
@@ -37,14 +37,14 @@
 ---
 
 <p align="center">
-  <img src="docs/images/screenshot.png" alt="AXON Dashboard" width="800">
+  <img src="docs/images/screenshot.png" alt="VAXON Dashboard" width="800">
 </p>
 
-## Why AXON?
+## Why VAXON?
 
 AI agents today can read files, browse the web, execute shell commands, and send emails — **autonomously**. Most do it without asking. No approval. No audit log. No control.
 
-**AXON does it differently:**
+**VAXON does it differently:**
 
 - Every action is shown **before execution** — tool name, parameters, risk level
 - You decide: **Allow**, **Reject**, or **Allow for Session**
@@ -61,7 +61,7 @@ AI agents today can read files, browse the web, execute shell commands, and send
 | **Multi-LLM** | Ollama (local), Claude, OpenAI, Gemini, Groq, OpenRouter — switch anytime |
 | **Audit Dashboard** | Full log of all actions — filterable, searchable, CSV export |
 | **Code Sandbox** | Docker-based code execution with network isolation and memory limits |
-| **MCP Server** | Use AXON as a controlled tool provider for Claude Desktop, Cursor, etc. |
+| **MCP Server** | Use VAXON as a controlled tool provider for Claude Desktop, Cursor, etc. |
 | **Email Integration** | IMAP/SMTP with read-only inbox and approval-gated sending |
 | **Scheduled Tasks** | Cron-based proactive tasks with approval gate |
 | **Workflow Chains** | Multi-step automations with trigger phrases and step variables |
@@ -80,8 +80,8 @@ AI agents today can read files, browse the web, execute shell commands, and send
 ### Docker (recommended)
 
 ```bash
-git clone https://github.com/NeuroVexon/axon-community.git
-cd axon-community
+git clone https://github.com/NeuroVexon/vaxon-community.git
+cd vaxon-community
 
 cp .env.example .env
 
@@ -120,7 +120,7 @@ npm start
 
 ## CLI
 
-AXON ships with a full CLI for power users — SSE streaming, tool approval, and pipe support right in your terminal.
+VAXON ships with a full CLI for power users — SSE streaming, tool approval, and pipe support right in your terminal.
 
 ### Installation
 
@@ -262,18 +262,18 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Community
 
-- [GitHub Discussions](https://github.com/NeuroVexon/axon-community/discussions)
-- [GitHub Issues](https://github.com/NeuroVexon/axon-community/issues)
+- [GitHub Discussions](https://github.com/NeuroVexon/vaxon-community/discussions)
+- [GitHub Issues](https://github.com/NeuroVexon/vaxon-community/issues)
 - Email: service@neurovexon.com
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=NeuroVexon/axon-community&type=Date)](https://star-history.com/#NeuroVexon/axon-community&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=NeuroVexon/vaxon-community&type=Date)](https://star-history.com/#NeuroVexon/vaxon-community&Date)
 
 ---
 
 <p align="center">
-  <strong>AXON by NeuroVexon</strong><br>
+  <strong>VAXON by NeuroVexon</strong><br>
   <em>Agentic AI — without losing control.</em>
 </p>
 
